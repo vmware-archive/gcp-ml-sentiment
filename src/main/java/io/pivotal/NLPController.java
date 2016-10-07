@@ -1,5 +1,6 @@
 package io.pivotal;
 
+import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.language.v1beta1.CloudNaturalLanguageAPI;
 import com.google.api.services.language.v1beta1.model.AnalyzeSentimentRequest;
 import com.google.api.services.language.v1beta1.model.AnalyzeSentimentResponse;
@@ -51,9 +52,16 @@ public class NLPController {
         VisionApiService vps = new VisionApiService();
 
         try {
-            List<EntityAnnotation> results = vps.identifyLandmark(file.getBytes(),10);
-//            List<EntityAnnotation> results = vps.labelImage(file.getBytes(),10);
-            System.out.println(results);
+            List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(),10);
+            EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
+            String landmarkName = landmarkResult.getDescription();
+
+            BigQueryApiService bqs = new BigQueryApiService();
+            String query = String.format("SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s \")",landmarkName);
+
+            java.util.List<TableRow> results =bqs.executeQuery(query);
+
+
             redirectAttributes.addFlashAttribute("queryResults",
                     results.toString());
         }  catch (Exception e) {

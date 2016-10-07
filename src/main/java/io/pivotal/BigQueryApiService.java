@@ -29,39 +29,53 @@ public class BigQueryApiService {
 
     }
 
-    public List<TableRow> executeQuery (String query) throws IOException {
+    public List<TableRow> executeQuery (String query)  {
 
-        List<TableRow> results = new ArrayList<TableRow>();
+        List<TableRow> rows = new ArrayList<TableRow>();
 
-        CredentialManager credentialManager = new CredentialManager();
+        try {
+            CredentialManager credentialManager = new CredentialManager();
 
-        Bigquery bigquery = credentialManager.getBiqQueryClient();
-        String projectId = "cbriant-dev";
+            Bigquery bigquery = credentialManager.getBiqQueryClient();
+            String projectId = "cbriant-dev";
 
-        List<TableRow> rows =
-                executeQuery(
-                        query,
-                        bigquery,
-                        projectId);
+             rows =
+                    executeQuery(
+                            query,
+                            bigquery,
+                            projectId);
+
+            System.out.println("Successfully executed a query");
+        } catch (Exception e) {
+            System.out.println(e);
+
+        }
 
         return rows;
     }
 
 
-    private static List<TableRow> executeQuery(String querySql, Bigquery bigquery, String projectId)
-            throws IOException {
-        QueryResponse query =
-                bigquery.jobs().query(projectId, new QueryRequest().setQuery(querySql)).execute();
+    private static List<TableRow> executeQuery(String querySql, Bigquery bigquery, String projectId) {
+        List<TableRow> rows = new ArrayList<TableRow>();
 
-        // Execute it
-        GetQueryResultsResponse queryResult =
-                bigquery
-                        .jobs()
-                        .getQueryResults(
-                                query.getJobReference().getProjectId(), query.getJobReference().getJobId())
-                        .execute();
-        return queryResult.getRows();
+        try {
+            QueryResponse query =
+                    bigquery.jobs().query(projectId, new QueryRequest().setQuery(querySql)).execute();
+
+            // Execute it
+            GetQueryResultsResponse queryResult =
+                    bigquery
+                            .jobs()
+                            .getQueryResults(
+                                    query.getJobReference().getProjectId(), query.getJobReference().getJobId())
+                            .execute();
+            return queryResult.getRows();
+
+        } catch (Exception e) {
+            System.out.println(e);
+            return rows;
+        }
     }
-    
+
 
 }
