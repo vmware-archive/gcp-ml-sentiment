@@ -24,8 +24,9 @@ public class QueryResultsViewMapping {
 
     public QueryResultsViewMapping(TableRow rows) {
         int count =0;
+        System.out.println("Entered the mapping");
 
-
+        System.out.println(rows.toString());
         for (TableCell cell: rows.getF()) {
 
             if (count == 0 ) {
@@ -36,13 +37,35 @@ public class QueryResultsViewMapping {
                 bookLocation = cell.getV().toString();
 
             }
+            count++;
             System.out.printf("%-50s", cell.getV());
         }
 
         }
 
+    public String getBookName() {
+        return bookName;
+    }
 
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
+    }
 
+    public String getAuthorName() {
+        return authorName;
+    }
+
+    public void setAuthorName(String authorName) {
+        this.authorName = authorName;
+    }
+
+    public String getBookLocation() {
+        return bookLocation;
+    }
+
+    public void setBookLocation(String bookLocation) {
+        this.bookLocation = bookLocation;
+    }
 
     @Override
     public String toString() {

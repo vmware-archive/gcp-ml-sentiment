@@ -24,23 +24,37 @@ background-color: #059a91
 </head>
 <body>
 
+
+
+
     <div class="container">
         <div class="row>
         <div class="panel panel-default" id="mypanel">
         <div class="panel-heading">Results of Image Processing</div>
+            <div class="list-group">
 
-            <#list queryResults as user>
-              <p>${user}
-            </#list>
+                    <#list queryResults as user>
+                     <div class="panel panel-default">
+                          <div class="panel-body">
+                            <h4 class="list-group-item-heading">Image <=> Book Matching</h4>
+                            <p class="list-group-item-text">Book Name: ${user.bookName}</p>
+                            <p class="list-group-item-text">Author Name: ${user.authorName}</p>
+                            <p class="list-group-item-text">Book Location: ${user.bookLocation}</p>
+
+                           </div>
+                     </div>
+
+                    </#list>
+
+            </div>
 
              <div>
-                 Message: ${message}
+             <h4>
+                ${message}
+              </h4>
 
 
 
-                 <br>
-                 Results of Query
-               </div>
 
       </div>
     </div>

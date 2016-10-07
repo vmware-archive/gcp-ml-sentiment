@@ -48,7 +48,7 @@ public class NLPController {
         System.out.println(file.getName());
         System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
         redirectAttributes.addFlashAttribute("message",
-                "You successfully uploaded " + file.getOriginalFilename() + "!");
+                "Processed File " + file.getOriginalFilename() + "!");
 
 
         VisionApiService vps = new VisionApiService();
