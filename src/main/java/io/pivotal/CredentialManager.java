@@ -9,6 +9,9 @@ import java.net.URLClassLoader;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.services.bigquery.Bigquery;
+import com.google.api.services.bigquery.BigqueryScopes;
 import com.google.api.services.vision.v1.Vision;
 import com.google.api.services.vision.v1.VisionScopes;
 import org.json.JSONArray;
@@ -62,6 +65,24 @@ public class CredentialManager {
 				.setApplicationName(APPLICATION_NAME)
 				.build();
 	}
+
+	public  Bigquery getBiqQueryClient() throws IOException {
+		// Create the credential
+		HttpTransport transport = new NetHttpTransport();
+		JsonFactory jsonFactory = new JacksonFactory();
+		GoogleCredential cred = credential();
+
+		// Depending on the environment that provides the default credentials (e.g. Compute Engine, App
+		// Engine), the credentials may require us to specify the scopes we need explicitly.
+		// Check for this case, and inject the Bigquery scope if required.
+		if (cred.createScopedRequired()) {
+			cred = cred.createScoped(CloudNaturalLanguageAPIScopes.all());
+		}
+		return new Bigquery.Builder(transport, jsonFactory, cred)
+				.setApplicationName("Bigquery Samples")
+				.build();
+	}
+
 
 	private static GoogleCredential credential = null;
 	private static final String APP_NAME = "spring-nlp";

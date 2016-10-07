@@ -29,9 +29,8 @@ public class NLPController {
     }
 
     @RequestMapping("/results")
-    @ResponseBody
     public String renderResults(Model model) {
-        return "Here are results";
+        return "results";
     }
 
 
@@ -53,7 +52,10 @@ public class NLPController {
 
         try {
             List<EntityAnnotation> results = vps.identifyLandmark(file.getBytes(),10);
+//            List<EntityAnnotation> results = vps.labelImage(file.getBytes(),10);
             System.out.println(results);
+            redirectAttributes.addFlashAttribute("queryResults",
+                    results.toString());
         }  catch (Exception e) {
             System.out.println(e);
         }
