@@ -30,7 +30,11 @@ import com.google.api.services.language.v1beta1.model.Sentiment;
 
 public class CredentialManager {
 
-	public static CloudNaturalLanguageAPI nlpApi() throws IOException, GeneralSecurityException {
+	public  CredentialManager() {
+
+	}
+
+	public  CloudNaturalLanguageAPI getNLPAPI() throws IOException, GeneralSecurityException {
 		// HttpTransport trans = UrlFetchTransport.getDefaultInstance();
 		HttpTransport trans = GoogleNetHttpTransport.newTrustedTransport();
 		// JacksonFactory jFactory = new JacksonFactory();
@@ -67,6 +71,7 @@ public class CredentialManager {
 	// Return the Base64 encoded private key data string
 	private static String getPrivateKeyData() {
 		String env = System.getenv("VCAP_SERVICES");
+		System.out.println(env);
 		JSONObject json = new JSONObject(env);
 		JSONArray root = json.getJSONArray("google-ml-apis");
 		JSONObject obj0 = root.getJSONObject(0);
@@ -84,31 +89,5 @@ public class CredentialManager {
 		}
 	}
 
-	public static void main(String[] args) throws Exception {
-		// printClasspath(); // to debug that class loader issue
-		PrintStream stdout = System.out;
-		stdout.println("Attempting to parse VCAP_SERVICES ...");
-		// stdout.println(getPrivateKeyData());
-		stdout.println("Attempting to get instance of NLP API ...");
-		CloudNaturalLanguageAPI api = nlpApi();
-		stdout.println("Ok");
-		// TODO: pull all this out and into a request handler method
-		// Ref.
-		// https://cloud.google.com/natural-language/docs/sentiment-tutorial
-		AnalyzeSentimentRequest req = new AnalyzeSentimentRequest(); // Reuse this?
-		String tweet = "It doesn’t play well on TV ... and frankly, the ignoring of the female moderator "
-				+ "was really a low point.";
-		Document doc = new Document();
-		doc.setType("PLAIN_TEXT");
-		doc.setContent(tweet);
-		req.setDocument(doc);
-		AnalyzeSentimentResponse resp = api.documents().analyzeSentiment(req).execute();
-		Sentiment sentiment = resp.getDocumentSentiment();
-		// Most useful: multiply polarity X magnitude
-		Float polarity = sentiment.getPolarity();
-		Float magnitude = sentiment.getMagnitude();
-		stdout.println("Tweet: \"" + tweet + "\"");
-		stdout.println("  Magnitude: " + magnitude + ", Polarity: " + polarity);
-	}
 
 }
