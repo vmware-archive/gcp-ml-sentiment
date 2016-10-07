@@ -5,17 +5,65 @@ import com.google.api.services.language.v1beta1.model.AnalyzeSentimentRequest;
 import com.google.api.services.language.v1beta1.model.AnalyzeSentimentResponse;
 import com.google.api.services.language.v1beta1.model.Document;
 import com.google.api.services.language.v1beta1.model.Sentiment;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-@RestController
+@Controller
 public class NLPController {
-	
-	@RequestMapping("/")
+
+
+    @RequestMapping("/")
+    public String rednerIndex() {
+        return "index";
+    }
+
+    @RequestMapping("/results")
+    @ResponseBody
+    public String renderResults(Model model) {
+        return "Here are results";
+    }
+
+
+
+    @PostMapping("/upload")
+    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+                                   RedirectAttributes redirectAttributes) {
+
+
+
+        System.out.println(file.getContentType());
+        System.out.println(file.getName());
+        System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
+        redirectAttributes.addFlashAttribute("message",
+                "You successfully uploaded " + file.getOriginalFilename() + "!");
+
+
+        VisionApiService vps = new VisionApiService();
+
+        try {
+            List<EntityAnnotation> results = vps.identifyLandmark(file.getBytes(),10);
+            System.out.println(results);
+        }  catch (Exception e) {
+            System.out.println(e);
+        }
+
+
+        return "redirect:/results";
+    }
+
+
+	@RequestMapping("/test")
     @ResponseBody
     public HashMap<String,String> index() {
         // printClasspath(); // to debug that class loader issue

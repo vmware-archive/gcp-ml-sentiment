@@ -9,6 +9,8 @@ import java.net.URLClassLoader;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
 
+import com.google.api.services.vision.v1.Vision;
+import com.google.api.services.vision.v1.VisionScopes;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -45,6 +47,20 @@ public class CredentialManager {
 			cred = cred.createScoped(CloudNaturalLanguageAPIScopes.all());
 		}
 		return new CloudNaturalLanguageAPI.Builder(trans, jFactory, cred).setApplicationName(APP_NAME).build();
+	}
+
+	public  Vision getVisionService() throws IOException, GeneralSecurityException {
+		String APPLICATION_NAME = "Landmark Finder";
+
+		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+		GoogleCredential cred = credential();
+		if (cred.createScopedRequired()) {
+			cred = cred.createScoped(CloudNaturalLanguageAPIScopes.all());
+		}
+
+		return new Vision.Builder(GoogleNetHttpTransport.newTrustedTransport(), jsonFactory, cred)
+				.setApplicationName(APPLICATION_NAME)
+				.build();
 	}
 
 	private static GoogleCredential credential = null;
