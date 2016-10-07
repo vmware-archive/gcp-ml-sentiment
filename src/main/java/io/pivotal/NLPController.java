@@ -1,5 +1,6 @@
 package io.pivotal;
 
+import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.language.v1beta1.CloudNaturalLanguageAPI;
 import com.google.api.services.language.v1beta1.model.AnalyzeSentimentRequest;
@@ -7,6 +8,7 @@ import com.google.api.services.language.v1beta1.model.AnalyzeSentimentResponse;
 import com.google.api.services.language.v1beta1.model.Document;
 import com.google.api.services.language.v1beta1.model.Sentiment;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
+import io.pivotal.Domain.QueryResultsViewMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -36,12 +38,12 @@ public class NLPController {
 
 
 
-    @PostMapping("/upload")
+    @RequestMapping(name="/upload", method = RequestMethod.POST)
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes) {
 
 
-
+        QueryResultsViewMapping viewMapping = new QueryResultsViewMapping();
         System.out.println(file.getContentType());
         System.out.println(file.getName());
         System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
@@ -50,6 +52,7 @@ public class NLPController {
 
 
         VisionApiService vps = new VisionApiService();
+        ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
 
         try {
             List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(),10);
@@ -60,10 +63,25 @@ public class NLPController {
             String query = String.format("SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s \")",landmarkName);
 
             java.util.List<TableRow> results =bqs.executeQuery(query);
+            for (TableRow row : results) {
+                viewMapping = new QueryResultsViewMapping(row);
+                queryResults.add(viewMapping);
+
+//                for (TableCell field : row.getF()) {
+//
+//
+//                    System.out.printf("%-50s", field.getV());
+//                    queryResults.add(row.getF().toString());
+//                }
+
+
+                System.out.println();
+            }
+            System.out.println(queryResults);
 
 
             redirectAttributes.addFlashAttribute("queryResults",
-                    results.toString());
+                    queryResults);
         }  catch (Exception e) {
             System.out.println(e);
         }

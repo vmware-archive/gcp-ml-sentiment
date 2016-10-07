@@ -1,0 +1,4 @@
+---
+applications:
+  - name: SuperCoolLandmarkFinder
+    path: target/gcp-ml-nlp-0.0.1-SNAPSHOT.jar
