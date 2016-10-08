@@ -58,11 +58,17 @@ public class NLPController {
             List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(),10);
             EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
             String landmarkName = landmarkResult.getDescription();
+            System.out.println("Landmark (from Vision API): " + landmarkName);
 
             BigQueryApiService bqs = new BigQueryApiService();
-            String query = String.format("SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s \")",landmarkName);
+            String query = String.format(
+            		"SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM"
+            		+ " (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\")"
+            		+ " BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s\")"
+            		, landmarkName);
 
             java.util.List<TableRow> results =bqs.executeQuery(query);
+            if (results != null) {
             for (TableRow row : results) {
                 viewMapping = new QueryResultsViewMapping(row);
                 queryResults.add(viewMapping);
@@ -77,6 +83,9 @@ public class NLPController {
 
                 System.out.println();
             }
+            } else {
+            	queryResults.add(new QueryResultsViewMapping());
+            }
             System.out.println(queryResults);
 
 
@@ -89,7 +98,6 @@ public class NLPController {
 
         return "redirect:/results";
     }
-
 
 	@RequestMapping("/test")
     @ResponseBody
