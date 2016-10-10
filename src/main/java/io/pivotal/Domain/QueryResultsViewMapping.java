@@ -29,9 +29,13 @@ public class QueryResultsViewMapping {
         System.out.println(rows.toString());
         for (TableCell cell: rows.getF()) {
             // Why are we seeing "author = java.lang.Object@3d347088"?
-            String stringVal = cell.getV().toString();
-            if (stringVal.startsWith("java.lang.Object@")) {
-                stringVal = DEFAULT_VALUE;
+            Object cellObj = cell.getV();
+            String stringVal = DEFAULT_VALUE;
+            if (cellObj != null) {
+                stringVal = cell.getV().toString();
+                if (stringVal.startsWith("java.lang.Object@")) {
+                    stringVal = DEFAULT_VALUE;
+                }
             }
             if (count == 0 ) {
                 bookName = stringVal;
