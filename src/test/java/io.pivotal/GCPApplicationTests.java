@@ -4,6 +4,8 @@ package io.pivotal;
 import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
+import io.pivotal.service.BigQueryApiService;
+import io.pivotal.service.VisionApiService;
 import org.junit.Test;
 
 import java.io.File;
@@ -49,10 +51,9 @@ public class GCPApplicationTests {
 
     @Test
     public void testExecuteBigQueryQuery() throws IOException {
-        BigQueryApiService bqs = new BigQueryApiService();
-        String query = "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"Taj Mahal \")";
+        BigQueryApiService bqs = new BigQueryApiService("Taj Mahal");
 
-        java.util.List<TableRow> results =bqs.executeQuery(query);
+        java.util.List<TableRow> results =bqs.executeQuery();
         System.out.println("Iterating over returned results");
         System.out.println(results.size());
         for (TableRow row : results) {
@@ -77,10 +78,9 @@ public class GCPApplicationTests {
         String landmarkName = landmarkResult.getDescription();
         System.out.println(landmarkName.trim());
 
-        BigQueryApiService bqs = new BigQueryApiService();
-        String query = String.format("SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s \")",landmarkName);
+        BigQueryApiService bqs = new BigQueryApiService(landmarkName);
 
-        java.util.List<TableRow> results =bqs.executeQuery(query);
+        java.util.List<TableRow> results =bqs.executeQuery();
         assertNotEquals(0,results.size());
         for (TableRow row : results) {
             for (TableCell field : row.getF()) {
@@ -101,10 +101,9 @@ public class GCPApplicationTests {
 
         System.out.println(landmarkName.trim());
 
-       bqs = new BigQueryApiService();
-        query = String.format("SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s \")",landmarkName);
+       bqs = new BigQueryApiService(landmarkName);
 
-         results =bqs.executeQuery(query);
+         results =bqs.executeQuery();
         assertNotEquals(0,results.size());
 
         for (TableRow row : results) {

@@ -1,4 +1,4 @@
-package io.pivotal;
+package io.pivotal.service;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -8,6 +8,7 @@ import com.google.api.services.vision.v1.Vision;
 import com.google.api.services.vision.v1.VisionScopes;
 import com.google.api.services.vision.v1.model.*;
 import com.google.common.collect.ImmutableList;
+import io.pivotal.CredentialManager;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;

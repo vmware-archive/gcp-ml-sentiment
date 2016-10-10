@@ -1,4 +1,4 @@
-package io.pivotal;
+package io.pivotal.service;
 
 import com.google.api.services.bigquery.model.TableRow;
 
@@ -16,6 +16,7 @@ import com.google.api.services.bigquery.model.QueryRequest;
 import com.google.api.services.bigquery.model.QueryResponse;
 import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableRow;
+import io.pivotal.CredentialManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,11 +26,17 @@ import java.util.Scanner;
  */
 public class BigQueryApiService {
 
-    public BigQueryApiService() {
+    String query;
 
+    public BigQueryApiService(String landmarkName) {
+        this.query=  String.format(
+                "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM"
+                        + " (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\")"
+                        + " BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s\")"
+                , landmarkName);
     }
 
-    public List<TableRow> executeQuery (String query)  {
+    public List<TableRow> executeQuery ()  {
 
         List<TableRow> rows = new ArrayList<TableRow>();
 
