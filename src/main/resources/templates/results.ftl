@@ -9,14 +9,20 @@
 
 <style>
 body{
-background-color: #059a91
+background-color: #fff;
 }
 
+#pageBody {
+    height:100%;
+}
 #mypanel {
-    background-color: white;
-    margin-top:100px;
-    border: 1px solid #eee;
+    border: 1px solid #243641;
     border-radius:5px;
+    height: 400px;
+}
+
+#flagShipText{
+    color: white;
 }
 
 </style>
@@ -25,40 +31,57 @@ background-color: #059a91
 <body>
 
 
-
-
-    <div class="container bg-cloud">
-        <div class="row>
-        <div class="panel panel-default" id="mypanel">
-        <div class="panel-heading">Results of Image Processing</div>
-            <div class="tile-layout-xs-3 tile-gutter tile-layout">
-
-                    <#list queryResults as user>
-                    <div class="tile-item">
-                     <div class="panel panel-clickable-alt">
-                          <div class="panel-body">
-                            <h4 class="list-group-item-heading">Image <=> Book Matching</h4>
-                            <p class="list-group-item-text">Book Name: ${user.bookName}</p>
-                            <p class="list-group-item-text">Author Name: ${user.authorName}</p>
-                            <p class="list-group-item-text">Book Location: ${user.bookLocation}</p>
-
-                           </div>
-                     </div>
-                    </div>
-                    </#list>
-
-            </div>
-
-             <div>
-             <h4>
-                ${message}
-              </h4>
-
-
-
-
+    <div class="container bg-glow">
+        <h1 id="flagShipText">Pivotal File Uploader</h1>
       </div>
     </div>
+
+
+<div id="pageBody" class="pane bg-cloud">
+      <div class="container">
+                <div class="panel panel-default bg-neutral-8" id="mypanel" >
+                   <div class="panel-heading">Results of Image Processing</div>
+
+
+
+                    <div class="table-scrollable table-scrollable-sm">
+                      <div class="table-scrollable-header">
+                        <table class="table table-data table-light">
+                          <thead>
+                            <tr>
+                              <th width="40%">Book Title</th>
+                              <th width="20%">Author Name</th>
+                              <th width="40%">Relevant Tags</th>
+                            </tr>
+                          </thead>
+                        </table>
+                      </div>
+                      <div class="table-scrollable-body">
+                        <table class="table table-data table-light">
+                          <tbody>
+                           <#list queryResults as user>
+                                <tr>
+                                  <td width="25%">${user.bookName}</td>
+                                  <td width="25%">${user.authorName}</td>
+                                  <td width="50%">${user.bookLocation}</td>
+
+                                </tr>
+                            </#list>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+
+
+                </div>
+         </div>
+
+      </div>
+</div>
+
+
+
 
 
 

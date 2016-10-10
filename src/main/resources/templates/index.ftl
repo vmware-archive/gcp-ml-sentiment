@@ -12,11 +12,17 @@ body{
 background-color: #24363D;
 }
 
+#pageBody {
+    height:100%;
+}
 #mypanel {
-    background-color: white;
-    margin-top:100px;
-    border: 1px solid #eee;
+    border: 1px solid #fff;
     border-radius:5px;
+    height: 300px;
+}
+
+#flagShipText{
+    color: white;
 }
 
 </style>
@@ -24,29 +30,37 @@ background-color: #24363D;
 </head>
 <body>
 
+<div class="pane pane-offset bg-dark-2">
 
 
-    <div class="container">
-        <div class="row>
-        <div class="panel panel-default" id="mypanel">
-        <div class="panel-heading">Upload a File in order to get book recommendations based on that photo's location!!!</div>
-
-            <div class="panel-body">
-            <form method="POST" enctype="multipart/form-data" action="/upload">
-                            <table>
-                                <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
-                                <tr><td></td><td><input class="btn btn-primary" type="submit" value="Upload" id="submitButton" /></td></tr>
-                            </table>
-                 </form>
-           <div id="formLoader"></div>
-            </div>
-
-
-              </div>
-
+    <div class="container bg-glow">
+        <h1 id="flagShipText">Pivotal File Uploader</h1>
       </div>
     </div>
 
+
+<div id="pageBody" class="pane bg-cloud">
+      <div class="container">
+                <div class="panel panel-default bg-neutral-8" id="mypanel" >
+                    <div class="panel-heading">Upload a File in order to get book recommendations based on that photo's location!!!</div>
+
+                        <div class="panel-body">
+                            <form method="POST" enctype="multipart/form-data" action="/upload">
+                                            <table>
+                                                <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
+                                                <tr><td></td><td><input class="btn btn-primary" type="submit" value="Upload" id="submitButton" /></td></tr>
+                                            </table>
+                                 </form>
+                           <div id="formLoader"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+         </div>
+
+      </div>
+</div>
 
 
 
