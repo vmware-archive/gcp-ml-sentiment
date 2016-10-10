@@ -106,15 +106,40 @@ public class CredentialManager {
 	}
 
 	// Return the Base64 encoded private key data string
+    // VERSION FOR USING `cf cups ...'
 	private static String getPrivateKeyData() {
 		String env = System.getenv("VCAP_SERVICES");
 		System.out.println(env);
 		JSONObject json = new JSONObject(env);
+		JSONArray root = json.getJSONArray("user-provided");
+		System.out.println("root: " + root);
+		JSONObject obj0 = root.getJSONObject(0);
+		/*String credString = obj0.getString("credentials");
+		System.out.println("credString: " + credString);
+		JSONObject cred = new JSONObject(credString);
+		String rv = cred.getString("PrivateKeyData");*/
+		String rv = obj0.getJSONObject("credentials").getString("PrivateKeyData");
+		System.out.println("PrivateKeyData: " + rv);
+		//return cred.getString("PrivateKeyData");
+		return rv;
+	}
+
+	// Return the Base64 encoded private key data string
+	// ORIGINAL VERSION
+	private static String __getPrivateKeyData() {
+		String env = System.getenv("VCAP_SERVICES");
+		System.out.println(env);
+		JSONObject json = new JSONObject(env);
 		JSONArray root = json.getJSONArray("google-ml-apis");
+		System.out.println("root: " + root);
 		JSONObject obj0 = root.getJSONObject(0);
 		String credString = obj0.getString("credentials");
+		System.out.println("credString: " + credString);
 		JSONObject cred = new JSONObject(credString);
-		return cred.getString("PrivateKeyData");
+		String rv = cred.getString("PrivateKeyData");
+		System.out.println("PrivateKeyData: " + rv);
+		//return cred.getString("PrivateKeyData");
+		return rv;
 	}
 
 	@SuppressWarnings("unused")
