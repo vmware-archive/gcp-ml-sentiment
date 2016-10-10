@@ -30,10 +30,11 @@ public class BigQueryApiService {
 
     public BigQueryApiService(String landmarkName) {
         this.query=  String.format(
-                "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM"
-                        + " (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\")"
-                        + " BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s\")"
-                , landmarkName);
+                "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects "
+                        + "FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], "
+                        + "'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"'))"
+                        + "WHERE (REGEXP_MATCH(LOWER(CONCAT(BookMeta_Title, ' ', BookMeta_Subjects)), r'%s'))"
+                , landmarkName.toLowerCase().replaceAll(" +", "\\\\s+"));
     }
 
     public List<TableRow> executeQuery ()  {
