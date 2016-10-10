@@ -29,16 +29,20 @@ background-color: #fff;
 
 </head>
 <body>
+<div class="pane pane-offset bg-dark-2">
 
 
     <div class="container bg-glow">
-        <h1 id="flagShipText">Pivotal File Uploader</h1>
+        <h1 id="flagShipText">Pivotal x Google Cloud Engine Landmark Vanguard</h1>
       </div>
     </div>
 
 
 <div id="pageBody" class="pane bg-cloud">
       <div class="container">
+              <a class="link-text" href="/">
+                <i class="fa fa-repeat"></i> New Search
+              </a>
                 <div class="panel panel-default bg-neutral-8" id="mypanel" >
                    <div class="panel-heading">Results of Image Processing</div>
 
@@ -61,9 +65,9 @@ background-color: #fff;
                           <tbody>
                            <#list queryResults as user>
                                 <tr>
-                                  <td width="25%">${user.bookName}</td>
-                                  <td width="25%">${user.authorName}</td>
-                                  <td width="50%">${user.bookLocation}</td>
+                                  <td width="40%">${user.bookName}</td>
+                                  <td width="20%">${user.authorName}</td>
+                                  <td width="40%">${user.bookLocation}</td>
 
                                 </tr>
                             </#list>
@@ -71,7 +75,6 @@ background-color: #fff;
                         </table>
                       </div>
                     </div>
-
 
 
                 </div>

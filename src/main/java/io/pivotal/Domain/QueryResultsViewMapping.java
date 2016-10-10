@@ -3,6 +3,7 @@ package io.pivotal.Domain;
 import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableRow;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,10 +14,13 @@ public class QueryResultsViewMapping {
     String bookName;
     String authorName;
     String bookLocation;
+    boolean hasMessages;
+    ArrayList<String> alerts;
 
     private static final String DEFAULT_VALUE = "(Not available)";
 
     public QueryResultsViewMapping() {
+
         this.bookName = "N/A";
         this.authorName = "N/A";
         this.bookLocation = "N/A";

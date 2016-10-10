@@ -25,14 +25,7 @@ public class WebController {
 
 
     @RequestMapping("/")
-    public String renderIndex() {
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
-
-        URL[] urls = ((URLClassLoader)cl).getURLs();
-
-        for(URL url: urls){
-            System.out.println(url.getFile());
-        }
+    public String renderIndex(Model model) {
 
         return "index";
     }
@@ -42,8 +35,7 @@ public class WebController {
         return "results";
     }
 
-//
-//
+
     @RequestMapping(value="/upload", method = RequestMethod.POST)
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes) {
@@ -79,17 +71,12 @@ public class WebController {
                     viewMapping = new QueryResultsViewMapping(row);
                     queryResults.add(viewMapping);
 
-//                for (TableCell field : row.getF()) {
-//
-//
-//                    System.out.printf("%-50s", field.getV());
-//                    queryResults.add(row.getF().toString());
-//                }
 
 
                     System.out.println();
                 }
             } else {
+                System.out.println("Results are null");
                 queryResults.add(new QueryResultsViewMapping());
             }
             System.out.println(queryResults);
@@ -98,9 +85,16 @@ public class WebController {
             redirectAttributes.addFlashAttribute("queryResults",
                     queryResults);
         }  catch (Exception e) {
+            System.out.println("THERE WAS EXCEPTION");
             System.out.println(e);
-        }
+            redirectAttributes.addFlashAttribute("alert",
+                    "There was a problem processing your file, please try another image");
 
+            return "redirect:/";
+
+        }
+//        redirectAttributes.addFlashAttribute("alert",
+//                "");
 
         return "redirect:/results";
     }

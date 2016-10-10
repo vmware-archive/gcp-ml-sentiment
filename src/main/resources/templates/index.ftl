@@ -34,12 +34,24 @@ background-color: #24363D;
 
 
     <div class="container bg-glow">
-        <h1 id="flagShipText">Pivotal File Uploader</h1>
+        <h1 id="flagShipText">Pivotal x Google Cloud Engine Landmark Vanguard</h1>
       </div>
     </div>
 
 
 <div id="pageBody" class="pane bg-cloud">
+    <#if alert??>
+        <div class="alert alert-error">
+          <div class="media mtn">
+            <div class="media-left">
+              <i class="fa alert-icon fa-exclamation-triangle"></i>
+            </div>
+            <div class="media-body em-high">
+              <p>${alert}</p>
+            </div>
+          </div>
+        </div>
+    </#if>
       <div class="container">
                 <div class="panel panel-default bg-neutral-8" id="mypanel" >
                     <div class="panel-heading">Upload a File in order to get book recommendations based on that photo's location!!!</div>
