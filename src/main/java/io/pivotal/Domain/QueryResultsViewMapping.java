@@ -14,7 +14,7 @@ public class QueryResultsViewMapping {
     String authorName;
     String bookLocation;
 
-
+    private static final String DEFAULT_VALUE = "(Not available)";
 
     public QueryResultsViewMapping() {
         this.bookName = "N/A";
@@ -28,14 +28,17 @@ public class QueryResultsViewMapping {
 
         System.out.println(rows.toString());
         for (TableCell cell: rows.getF()) {
-
+            // Why are we seeing "author = java.lang.Object@3d347088"?
+            String stringVal = cell.getV().toString();
+            if (stringVal.startsWith("java.lang.Object@")) {
+                stringVal = DEFAULT_VALUE;
+            }
             if (count == 0 ) {
-                bookName = cell.getV().toString();
+                bookName = stringVal;
             } else if (count == 1) {
-                authorName = cell.getV().toString();
+                authorName = stringVal;
             } else {
-                bookLocation = cell.getV().toString();
-
+                bookLocation = stringVal;
             }
             count++;
             System.out.printf("%-50s", cell.getV());
