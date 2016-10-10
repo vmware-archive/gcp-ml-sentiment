@@ -2,23 +2,18 @@ package io.pivotal;
 
 
 import com.google.api.services.bigquery.model.TableCell;
+import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import org.junit.Test;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.GeneralSecurityException;
-import java.util.*;
 import java.util.List;
-
-import com.google.api.services.bigquery.model.TableRow;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 
 public class GCPApplicationTests {
 

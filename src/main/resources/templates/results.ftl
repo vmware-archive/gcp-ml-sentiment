@@ -5,7 +5,7 @@
        <!-- Latest compiled and minified CSS -->
        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-       <link rel="stylesheet" href="/Users/mross/workspace/googleDemo/gcp-ml-sentiment/src/main/resources/static/css/components.css">
+       <link rel="stylesheet" href="components.css">
 
 <style>
 body{
@@ -27,14 +27,15 @@ background-color: #059a91
 
 
 
-    <div class="container">
+    <div class="container bg-cloud">
         <div class="row>
         <div class="panel panel-default" id="mypanel">
         <div class="panel-heading">Results of Image Processing</div>
-            <div class="list-group">
+            <div class="tile-layout-xs-3 tile-gutter tile-layout">
 
                     <#list queryResults as user>
-                     <div class="panel panel-default">
+                    <div class="tile-item">
+                     <div class="panel panel-clickable-alt">
                           <div class="panel-body">
                             <h4 class="list-group-item-heading">Image <=> Book Matching</h4>
                             <p class="list-group-item-text">Book Name: ${user.bookName}</p>
@@ -43,7 +44,7 @@ background-color: #059a91
 
                            </div>
                      </div>
-
+                    </div>
                     </#list>
 
             </div>
