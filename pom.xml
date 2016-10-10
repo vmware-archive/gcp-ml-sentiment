@@ -68,6 +68,12 @@
 			<groupId>com.google.api-client</groupId>
 			<artifactId>google-api-client-appengine</artifactId>
 			<version>1.22.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.servlet</groupId>
+					<artifactId>servlet-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -96,7 +102,6 @@
 			<artifactId>google-http-client-jackson2</artifactId>
 			<version>1.22.0</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
