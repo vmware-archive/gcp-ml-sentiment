@@ -60,10 +60,16 @@ public class WebController {
 
             BigQueryApiService bqs = new BigQueryApiService();
             String query = String.format(
-                    "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM"
+                    /*"SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects FROM"
                             + " (TABLE_QUERY([gdelt-bq:internetarchivebooks], 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\")"
-                            + " BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s\")"
-                    , landmarkName);
+                            + " BETWEEN \"1819\" AND \"2014\"')) WHERE LOWER(BookMeta_Subjects) CONTAINS LOWER(\"%s\")"*/
+                    "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects "
+                            + "FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], "
+                            + "'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"'))"
+                            + "WHERE (REGEXP_MATCH(LOWER(CONCAT(BookMeta_Title, ' ', BookMeta_Subjects)), r'%s'))"
+                    , landmarkName.toLowerCase().replaceAll(" +", "\\\\s+")).replace("'", "\\'");
+
+            System.out.println("QUERY: " + query);
 
             java.util.List<TableRow> results =bqs.executeQuery(query);
             if (results != null) {
