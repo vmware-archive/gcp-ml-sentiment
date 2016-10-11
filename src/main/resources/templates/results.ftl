@@ -53,7 +53,7 @@ background-color: #fff;
                      <br>
                      <code>BigQuery Processing Took: ${bigQueryApiTiming} secs</code>
                        <br>
-                       <code>BigQuery Processed ${bigQueryBytesProcessed} bytes</code>
+                       <code>BigQuery Processed ${bigQueryBytesProcessed} bytes ${bigQueryIsCached}</code>
                    </p>
                    </div>
 

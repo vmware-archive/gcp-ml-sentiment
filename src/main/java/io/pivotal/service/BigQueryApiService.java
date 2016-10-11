@@ -29,6 +29,7 @@ public class BigQueryApiService {
     private String query;
     private long totalBytesProcessed;
     private String dataSetName = "gdelt-bq:internetarchivebooks";
+    private boolean isCached;
 
     public long getTotalBytesProcessed() {
         return totalBytesProcessed;
@@ -77,6 +78,9 @@ public class BigQueryApiService {
         return rows;
     }
 
+    public boolean isCached() {
+        return isCached;
+    }
 
     private List<TableRow> executeQuery(String querySql, Bigquery bigquery, String projectId) {
         List<TableRow> rows = new ArrayList<TableRow>();
@@ -94,7 +98,8 @@ public class BigQueryApiService {
                             .execute();
             // TODO: return some metadata about the query (bytes processed, elapsed time, data set)
             totalBytesProcessed = queryResult.getTotalBytesProcessed();
-            System.out.println("Total Bytes: " + totalBytesProcessed);
+            isCached = queryResult.getCacheHit();
+            System.out.println("Total Bytes: " + totalBytesProcessed + (isCached() ? " (cached)" : ""));
             return queryResult.getRows();
 
         } catch (Exception e) {
