@@ -5,6 +5,7 @@ import com.google.api.services.vision.v1.model.EntityAnnotation;
 import io.pivotal.Domain.QueryResultsViewMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -53,16 +54,25 @@ public class WebController {
         ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
 
         try {
+            StopWatch visionApiStopwatch = new StopWatch();
+            visionApiStopwatch.start();
 
             List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(), 10);
+            visionApiStopwatch.stop();
             EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
             String landmarkName = landmarkResult.getDescription();
             redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
 
-          BigQueryApiService bqs = new BigQueryApiService(landmarkName);
+            BigQueryApiService bqs = new BigQueryApiService(landmarkName);
 
-
+            StopWatch biqQueryStopwatch = new StopWatch();
+            biqQueryStopwatch.start();
             java.util.List<TableRow> results = bqs.executeQuery();
+            biqQueryStopwatch.stop();
+            redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
+            redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
+
+
             if (results != null) {
                 for (TableRow row : results) {
                     viewMapping = new QueryResultsViewMapping(row);
@@ -78,8 +88,6 @@ public class WebController {
                 redirectAttributes.addFlashAttribute("alert",
                         "There was a problem processing your file, please try another image");
             }
-            System.out.println(queryResults);
-
 
 
         } catch (Exception e) {

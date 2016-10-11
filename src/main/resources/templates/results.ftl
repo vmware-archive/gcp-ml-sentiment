@@ -47,7 +47,12 @@ background-color: #fff;
                    <div class="panel-heading">
 
 
-                   <h1>Found relevant books for Landmark:  <span class="em-max type-brand-8">${landmarkName}</span></h1>
+                   <h1 class="col-md-16" >Found relevant books for Landmark:  <span class="em-max type-brand-8">${landmarkName}</span></h1>
+                   <p class="txt-r col-md-8">
+                     <code>Vision API Processing Took: ${visionApiTiming} secs</code>
+                     <br>
+                     <code>BigQuery Processing Took: ${bigQueryApiTiming} secs</code>
+                   </p>
                    </div>
 
 

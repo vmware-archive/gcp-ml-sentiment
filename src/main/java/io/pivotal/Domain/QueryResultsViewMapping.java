@@ -48,7 +48,6 @@ public class QueryResultsViewMapping {
                 bookLocation = stringVal;
             }
             count++;
-            System.out.printf("%-50s", cell.getV());
         }
 
         }
