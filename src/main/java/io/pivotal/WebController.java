@@ -54,15 +54,15 @@ public class WebController {
 
                 StopWatch visionApiStopwatch = new StopWatch();
                 visionApiStopwatch.start();
-                List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(), 10);
+                List<EntityAnnotation> visionApiResults = vps.identifyLandmark(file.getBytes(), 10);
                 visionApiStopwatch.stop();
 
-                if (landmarkInfoArray == null) {
+                if (visionApiResults == null) {
                     redirectAttributes.addFlashAttribute("alert",
                             "Google Vision API was not able to identify your image, please try another");
                 } else {
 
-                    EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
+                    EntityAnnotation landmarkResult = visionApiResults.get(0);
                     String landmarkName = landmarkResult.getDescription();
                     redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
                     redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
@@ -106,4 +106,7 @@ public class WebController {
 
         return "redirect:/";
     }
+
+
+
 }
