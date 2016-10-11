@@ -46,7 +46,7 @@
             <div class="panel panel-default bg-neutral-8" id="mypanel" >
                <div class="panel-heading">Upload a file in order to get book recommendations based on that photo's location!</div>
                <div class="panel-body">
-                  <div class="tile-layout-sm-2 tile-layout-md-2 tile-layout-lg-2 tile-layout-xl-8 tile-gutter tile-layout">
+                  <div class="tile-layout-sm-2 tile-layout-md-2 tile-layout-lg-2 tile-layout-xl-2 tile-gutter tile-layout">
                      <div class="tile-item">
                         <div class="panel panel-clickable-alt">
                            <div class="panel-body">

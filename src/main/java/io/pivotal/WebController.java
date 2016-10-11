@@ -41,55 +41,49 @@ public class WebController {
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes) {
 
-
-        QueryResultsViewMapping viewMapping = new QueryResultsViewMapping();
-
         if (file.getSize() < 4000000 ) {
-
-
-            VisionApiService vps = new VisionApiService();
-            ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
-
             try {
-
+                VisionApiService vps = new VisionApiService();
                 StopWatch visionApiStopwatch = new StopWatch();
                 visionApiStopwatch.start();
+
                 List<EntityAnnotation> visionApiResults = vps.identifyLandmark(file.getBytes(), 10);
+
                 visionApiStopwatch.stop();
 
                 if (visionApiResults == null) {
                     redirectAttributes.addFlashAttribute("alert",
                             "Google Vision API was not able to identify your image, please try another");
                 } else {
-
+                    System.out.println(visionApiResults);
                     EntityAnnotation landmarkResult = visionApiResults.get(0);
                     String landmarkName = landmarkResult.getDescription();
+                    System.out.println(landmarkName);
                     redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
                     redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
-
-                    System.out.println(landmarkResult.getLocations().get(0).getLatLng());
                     redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
 
                     BigQueryApiService bqs = new BigQueryApiService(landmarkName);
                     StopWatch biqQueryStopwatch = new StopWatch();
                     biqQueryStopwatch.start();
-                    java.util.List<TableRow> results = bqs.executeQuery();
+                    List<TableRow> results = bqs.executeQuery();
                     biqQueryStopwatch.stop();
 
                     redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
                     redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
 
                     if (results != null) {
-                        for (TableRow row : results) {
-                            viewMapping = new QueryResultsViewMapping(row);
-                            queryResults.add(viewMapping);
+                        System.out.println(results.size());
 
-                        }
+                        ArrayList<QueryResultsViewMapping> queryResults = mapResultSetToList(results);
                         redirectAttributes.addFlashAttribute("queryResults",
                                 queryResults);
 
                         return "redirect:/results";
-                    }
+                    } else {
+
+                        redirectAttributes.addFlashAttribute("alert",
+                                "There was a problem processing your file, please try another image");                    }
                 }
 
                 } catch(Exception e){
@@ -105,6 +99,19 @@ public class WebController {
             }
 
         return "redirect:/";
+    }
+
+    private ArrayList<QueryResultsViewMapping> mapResultSetToList(List<TableRow> results){
+        QueryResultsViewMapping viewMapping;
+        ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
+
+        for (TableRow row : results) {
+            viewMapping = new QueryResultsViewMapping(row);
+            queryResults.add(viewMapping);
+
+        }
+
+        return queryResults;
     }
 
 
