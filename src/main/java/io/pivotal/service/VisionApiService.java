@@ -49,32 +49,38 @@ public class VisionApiService {
 
 
 
-    public List<EntityAnnotation> identifyLandmark(byte [] rawImage, int maxResults) throws IOException, GeneralSecurityException {
-        CredentialManager credentialManager = new CredentialManager();
-        Vision vision = credentialManager.getVisionService();
-        AnnotateImageRequest request =
-                new AnnotateImageRequest()
-                        .setImage(new Image().encodeContent(rawImage))
-                        .setFeatures(ImmutableList.of(
-                                new Feature()
-                                        .setType("LANDMARK_DETECTION")
-                                        .setMaxResults(maxResults)));
-        Vision.Images.Annotate annotate =
-                vision.images()
-                        .annotate(new BatchAnnotateImagesRequest().setRequests(ImmutableList.of(request)));
-        // Due to a bug: requests to Vision API containing large images fail when GZipped.
-        annotate.setDisableGZipContent(true);
+    public List<EntityAnnotation> identifyLandmark(byte [] rawImage, int maxResults)  {
+        List<EntityAnnotation> visionApiResults = null;
 
-        BatchAnnotateImagesResponse batchResponse = annotate.execute();
-        assert batchResponse.getResponses().size() == 1;
-        AnnotateImageResponse response = batchResponse.getResponses().get(0);
-        if (response.getLandmarkAnnotations() == null) {
-            throw new IOException(
-                    response.getError() != null
-                            ? response.getError().getMessage()
-                            : "Unknown error getting image annotations");
+        try {
+
+
+            CredentialManager credentialManager = new CredentialManager();
+            Vision vision = credentialManager.getVisionService();
+            AnnotateImageRequest request =
+                    new AnnotateImageRequest()
+                            .setImage(new Image().encodeContent(rawImage))
+                            .setFeatures(ImmutableList.of(
+                                    new Feature()
+                                            .setType("LANDMARK_DETECTION")
+                                            .setMaxResults(maxResults)));
+            Vision.Images.Annotate annotate =
+                    vision.images()
+                            .annotate(new BatchAnnotateImagesRequest().setRequests(ImmutableList.of(request)));
+            // Due to a bug: requests to Vision API containing large images fail when GZipped.
+            annotate.setDisableGZipContent(true);
+
+            BatchAnnotateImagesResponse batchResponse = annotate.execute();
+            assert batchResponse.getResponses().size() == 1;
+            AnnotateImageResponse response = batchResponse.getResponses().get(0);
+
+            visionApiResults = response.getLandmarkAnnotations();
+
+
+        } catch (Exception e) {
+                System.out.println(e);
         }
-        return response.getLandmarkAnnotations();
+        return visionApiResults;
     }
 
 

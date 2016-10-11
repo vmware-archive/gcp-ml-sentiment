@@ -58,6 +58,7 @@ public class BigQueryApiService {
 
             System.out.println("Successfully executed a query");
         } catch (Exception e) {
+
             System.out.println(e);
 
         }
@@ -83,6 +84,7 @@ public class BigQueryApiService {
             return queryResult.getRows();
 
         } catch (Exception e) {
+
             System.out.println(e);
             return rows;
         }

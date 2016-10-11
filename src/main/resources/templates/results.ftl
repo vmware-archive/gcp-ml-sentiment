@@ -16,7 +16,6 @@ background-color: #fff;
     height:100%;
 }
 #mypanel {
-    border: 1px solid #243641;
     border-radius:5px;
     height: 420px;
 }
