@@ -78,6 +78,7 @@ public class WebController {
 
                     redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
                     redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
+                    redirectAttributes.addFlashAttribute("bigQueryBytesProcessed", bqs.getTotalBytesProcessed());
 
                     if (results != null) {
                         for (TableRow row : results) {
