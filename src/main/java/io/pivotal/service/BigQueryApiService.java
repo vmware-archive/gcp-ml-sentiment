@@ -48,7 +48,8 @@ public class BigQueryApiService {
             CredentialManager credentialManager = new CredentialManager();
 
             Bigquery bigquery = credentialManager.getBiqQueryClient();
-            String projectId = "cbriant-dev";
+            //String projectId = "cbriant-dev";
+            String projectId = credentialManager.getProjectId();
 
              rows =
                     executeQuery(

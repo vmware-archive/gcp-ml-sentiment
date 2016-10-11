@@ -8,6 +8,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.services.bigquery.Bigquery;
@@ -35,17 +37,45 @@ import com.google.api.services.language.v1beta1.model.Sentiment;
 
 public class CredentialManager {
 
-	private static final String VCAP_KEY = "google-ml-apis"; // "user-provided";
+	private static final String VCAP_KEY = "google-ml-apis"; // "user-provided" if via `cf cups ...`
+	private String privateKeyData;
+	private String projectId;
 
-	public  CredentialManager() {
+	public CredentialManager() {
+		String env = System.getenv("VCAP_SERVICES");
+		System.out.println(env);
+		JSONObject json = new JSONObject(env);
+		JSONArray root = json.getJSONArray(VCAP_KEY);
+		System.out.println("root: " + root);
+		JSONObject obj0 = root.getJSONObject(0);
+		JSONObject cred = obj0.getJSONObject("credentials");
+		this.privateKeyData = cred.getString("PrivateKeyData");
+		String email = cred.getString("Email");
+		this.projectId = matchProjectId(email);
+		System.out.println("PrivateKeyData: " + privateKeyData);
+		System.out.println("project ID: " + projectId);
+	}
 
+	private String matchProjectId (String email) {
+		Pattern p = Pattern.compile("^[^@]+@([^.]+)\\..+$");
+		Matcher m = p.matcher(email);
+		String rv = "No match";
+		if (m.matches()) {
+			rv = m.group(1);
+		}
+		return rv;
+	}
+
+	public String getPrivateKeyData () {
+		return this.privateKeyData;
+	}
+
+	public String getProjectId () {
+		return this.projectId;
 	}
 
 	public  CloudNaturalLanguageAPI getNLPAPI() throws IOException, GeneralSecurityException {
-		// HttpTransport trans = UrlFetchTransport.getDefaultInstance();
 		HttpTransport trans = GoogleNetHttpTransport.newTrustedTransport();
-		// JacksonFactory jFactory = new JacksonFactory();
-		// JsonFactory jFactory = new JacksonFactory();
 		JsonFactory jFactory = JacksonFactory.getDefaultInstance();
 		GoogleCredential cred = credential();
 		if (cred.createScopedRequired()) {
@@ -73,7 +103,6 @@ public class CredentialManager {
 		HttpTransport transport = new NetHttpTransport();
 		JsonFactory jsonFactory = new JacksonFactory();
 		GoogleCredential cred = credential();
-
 		// Depending on the environment that provides the default credentials (e.g. Compute Engine, App
 		// Engine), the credentials may require us to specify the scopes we need explicitly.
 		// Check for this case, and inject the Bigquery scope if required.
@@ -89,54 +118,12 @@ public class CredentialManager {
 	private static GoogleCredential credential = null;
 	private static final String APP_NAME = "spring-nlp";
 
-	private static GoogleCredential credential() throws IOException {
+	private GoogleCredential credential() throws IOException {
 		if (credential == null) {
 			InputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(getPrivateKeyData()));
-			/*
-			 * The following line causes an error:
-			 * "java.lang.VerifyError: Cannot inherit from final class"
-			 * 
-			 * The approach shown in this link, adding "-verbose:class", does
-			 * help track down the cause:
-			 * 
-			 * http://stackoverflow.com/questions/100107/causes-of-getting-a-
-			 * java-lang-verifyerror
-			 */
 			credential = GoogleCredential.fromStream(stream);
 		}
 		return credential;
-	}
-
-	// Return the Base64 encoded private key data string
-    // VERSION FOR USING `cf cups ...'
-	private static String getPrivateKeyData() {
-		String env = System.getenv("VCAP_SERVICES");
-		System.out.println(env);
-		JSONObject json = new JSONObject(env);
-		JSONArray root = json.getJSONArray(VCAP_KEY);
-		System.out.println("root: " + root);
-		JSONObject obj0 = root.getJSONObject(0);
-		String rv = obj0.getJSONObject("credentials").getString("PrivateKeyData");
-		System.out.println("PrivateKeyData: " + rv);
-		return rv;
-	}
-
-	// Return the Base64 encoded private key data string
-	// ORIGINAL VERSION
-	private static String __getPrivateKeyData() {
-		String env = System.getenv("VCAP_SERVICES");
-		System.out.println(env);
-		JSONObject json = new JSONObject(env);
-		JSONArray root = json.getJSONArray("google-ml-apis");
-		System.out.println("root: " + root);
-		JSONObject obj0 = root.getJSONObject(0);
-		String credString = obj0.getString("credentials");
-		System.out.println("credString: " + credString);
-		JSONObject cred = new JSONObject(credString);
-		String rv = cred.getString("PrivateKeyData");
-		System.out.println("PrivateKeyData: " + rv);
-		//return cred.getString("PrivateKeyData");
-		return rv;
 	}
 
 	@SuppressWarnings("unused")
