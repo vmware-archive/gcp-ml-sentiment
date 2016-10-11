@@ -27,9 +27,7 @@ public class QueryResultsViewMapping {
 
     public QueryResultsViewMapping(TableRow rows) {
         int count =0;
-        System.out.println("Entered the mapping");
 
-        System.out.println(rows.toString());
         for (TableCell cell: rows.getF()) {
             // Why are we seeing "author = java.lang.Object@3d347088"?
             Object cellObj = cell.getV();

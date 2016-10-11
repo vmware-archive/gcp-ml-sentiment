@@ -43,60 +43,62 @@ public class WebController {
 
 
         QueryResultsViewMapping viewMapping = new QueryResultsViewMapping();
-        System.out.println(file.getContentType());
-        System.out.println(file.getName());
-        System.out.println("You successfully uploaded " + file.getOriginalFilename() + "!");
-        redirectAttributes.addFlashAttribute("message",
-                "Processed File " + file.getOriginalFilename() + "!");
+
+        System.out.println(file.getSize());
+        if (file.getSize() < 4000000 ) {
 
 
-        VisionApiService vps = new VisionApiService();
-        ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
+            VisionApiService vps = new VisionApiService();
+            ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
 
-        try {
-            StopWatch visionApiStopwatch = new StopWatch();
-            visionApiStopwatch.start();
+            try {
+                StopWatch visionApiStopwatch = new StopWatch();
+                visionApiStopwatch.start();
 
-            List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(), 10);
-            visionApiStopwatch.stop();
-            EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
-            String landmarkName = landmarkResult.getDescription();
-            redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
+                List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(), 10);
+                visionApiStopwatch.stop();
+                EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
+                String landmarkName = landmarkResult.getDescription();
+                redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
 
-            BigQueryApiService bqs = new BigQueryApiService(landmarkName);
+                BigQueryApiService bqs = new BigQueryApiService(landmarkName);
 
-            StopWatch biqQueryStopwatch = new StopWatch();
-            biqQueryStopwatch.start();
-            java.util.List<TableRow> results = bqs.executeQuery();
-            biqQueryStopwatch.stop();
-            redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
-            redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
-
-
-            if (results != null) {
-                for (TableRow row : results) {
-                    viewMapping = new QueryResultsViewMapping(row);
-                    queryResults.add(viewMapping);
+                StopWatch biqQueryStopwatch = new StopWatch();
+                biqQueryStopwatch.start();
+                java.util.List<TableRow> results = bqs.executeQuery();
+                biqQueryStopwatch.stop();
+                redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
+                redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
 
 
+                if (results != null) {
+                    for (TableRow row : results) {
+                        viewMapping = new QueryResultsViewMapping(row);
+                        queryResults.add(viewMapping);
+
+
+                    }
+                    redirectAttributes.addFlashAttribute("queryResults",
+                            queryResults);
+
+                    return "redirect:/results";
+                } else {
+                    redirectAttributes.addFlashAttribute("alert",
+                            "There was a problem processing your file, please try another image");
                 }
-                redirectAttributes.addFlashAttribute("queryResults",
-                        queryResults);
 
-                return "redirect:/results";
-            } else {
+
+            } catch (Exception e) {
+                System.out.println("THERE WAS EXCEPTION");
+                System.out.println(e);
                 redirectAttributes.addFlashAttribute("alert",
                         "There was a problem processing your file, please try another image");
+
+
             }
-
-
-        } catch (Exception e) {
-            System.out.println("THERE WAS EXCEPTION");
-            System.out.println(e);
+        } else {
             redirectAttributes.addFlashAttribute("alert",
-                    "There was a problem processing your file, please try another image");
-
-
+                    "The max file upload size is 4mb, please try a smaller image");
         }
 
         return "redirect:/";
