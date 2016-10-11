@@ -6,6 +6,7 @@
        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
        <link rel="stylesheet" href="components.css">
+        <script src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
 
 <style>
 body{
@@ -87,7 +88,28 @@ background-color: #fff;
 
                 </div>
          </div>
+<div class='map-wrapper'>
+  <div class='pane'>
+    <div class='container pan'>
+      <div class='row'>
+        <div class='col-sm-6 col-md-8 col-sm-offset-1'>
+          <div class='map-overlay panel panel-basic bg-neutral-10'>
+            <div class='panel-body paxxl'>
+              <h3 class="h2">Location</h3>
+              <address class='h4 pvl'>${landmarkName}<br>
+                
+              </address>
 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='pane pane-map'>
+    <div class='labs-map' id='my-google-map'></div>
+  </div>
+</div>
       </div>
 </div>
 
@@ -99,5 +121,54 @@ background-color: #fff;
 
 
 </body>
+<script>
+var maps = (function() {
+
+   var longitude =  ${longitude}
+   var latitude = ${latitude}
+
+  var self = this;
+  var map;
+
+  var mapOptions = {
+    placeId: "ChIJ9w1pfYiAhYAR45k8AD-TjhA",
+    center: new google.maps.LatLng(latitude,longitude),
+    mapElementClass: 'labs-map',
+    mapElementId: 'my-google-map',
+    zoom: 18
+  };
+
+  var initialize = function() {
+    map = new google.maps.Map(document.getElementById(mapOptions.mapElementId), {
+      center: mapOptions.center,
+      zoom: mapOptions.zoom,
+      disableDefaultUI: true
+    });
+
+    var request = {
+      placeId: mapOptions.placeId
+    };
+
+    var service = new google.maps.places.PlacesService(map);
+    service.getDetails(request, createMarker);
+  };
+
+  var createMarker = function(place, status) {
+    if (status == google.maps.places.PlacesServiceStatus.OK) {
+      new google.maps.Marker({
+        map: map,
+        position: place.geometry.location
+      });
+    }
+  };
+
+  self.initialize = initialize;
+  return self;
+})();
+
+google.maps.event.addDomListener(window, 'load', maps.initialize);
+
+
+</script>
 
 </html>

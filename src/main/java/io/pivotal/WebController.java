@@ -64,6 +64,10 @@ public class WebController {
 
                     EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
                     String landmarkName = landmarkResult.getDescription();
+                    redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
+                    redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
+
+                    System.out.println(landmarkResult.getLocations().get(0).getLatLng());
                     redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
 
                     BigQueryApiService bqs = new BigQueryApiService(landmarkName);
