@@ -26,12 +26,22 @@ import java.util.Scanner;
  */
 public class BigQueryApiService {
 
-    String query;
+    private String query;
+    private long totalBytesProcessed;
+    private String dataSetName = "gdelt-bq:internetarchivebooks";
+
+    public long getTotalBytesProcessed() {
+        return totalBytesProcessed;
+    }
+
+    public String getDataSetName() {
+        return dataSetName;
+    }
 
     public BigQueryApiService(String landmarkName) {
         this.query=  String.format(
                 "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects, LENGTH(BookMeta_Title) title_len"
-                        + " FROM (TABLE_QUERY([gdelt-bq:internetarchivebooks], "
+                        + " FROM (TABLE_QUERY([" + dataSetName + "], "
                         + " 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"'))"
                         + " WHERE (REGEXP_MATCH(LOWER(CONCAT(BookMeta_Title, ' ', BookMeta_Subjects)), r'%s'))"
                         + " ORDER BY title_len ASC"
@@ -68,7 +78,7 @@ public class BigQueryApiService {
     }
 
 
-    private static List<TableRow> executeQuery(String querySql, Bigquery bigquery, String projectId) {
+    private List<TableRow> executeQuery(String querySql, Bigquery bigquery, String projectId) {
         List<TableRow> rows = new ArrayList<TableRow>();
 
         try {
@@ -82,6 +92,9 @@ public class BigQueryApiService {
                             .getQueryResults(
                                     query.getJobReference().getProjectId(), query.getJobReference().getJobId())
                             .execute();
+            // TODO: return some metadata about the query (bytes processed, elapsed time, data set)
+            totalBytesProcessed = queryResult.getTotalBytesProcessed();
+            System.out.println("Total Bytes: " + totalBytesProcessed);
             return queryResult.getRows();
 
         } catch (Exception e) {

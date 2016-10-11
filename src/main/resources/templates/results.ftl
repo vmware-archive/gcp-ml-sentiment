@@ -52,6 +52,8 @@ background-color: #fff;
                      <code>Vision API Processing Took: ${visionApiTiming} secs</code>
                      <br>
                      <code>BigQuery Processing Took: ${bigQueryApiTiming} secs</code>
+                       <br>
+                       <code>BigQuery Processed ${bigQueryBytesProcessed} bytes</code>
                    </p>
                    </div>
 
