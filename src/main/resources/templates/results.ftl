@@ -18,7 +18,7 @@ background-color: #fff;
 #mypanel {
     border: 1px solid #243641;
     border-radius:5px;
-    height: 400px;
+    height: 420px;
 }
 
 #flagShipText{
@@ -33,7 +33,7 @@ background-color: #fff;
 
 
     <div class="container bg-glow">
-        <h1 id="flagShipText">Pivotal x Google Cloud Engine Landmark Vanguard</h1>
+        <h1 id="flagShipText">Pivotal x Google Cloud Platform Landmark Vanguard</h1>
       </div>
     </div>
 
@@ -44,7 +44,11 @@ background-color: #fff;
                 <i class="fa fa-repeat"></i> New Search
               </a>
                 <div class="panel panel-default bg-neutral-8" id="mypanel" >
-                   <div class="panel-heading">Results of Image Processing</div>
+                   <div class="panel-heading">
+
+
+                   <h1>Found relevant books for Landmark:  <span class="em-max type-brand-8">${landmarkName}</span></h1>
+                   </div>
 
 
 

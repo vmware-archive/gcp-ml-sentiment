@@ -34,7 +34,7 @@ background-color: #24363D;
 
 
     <div class="container bg-glow">
-        <h1 id="flagShipText">Pivotal x Google Cloud Engine Landmark Vanguard</h1>
+        <h1 id="flagShipText">Pivotal x Google Cloud Platform Landmark Vanguard</h1>
       </div>
     </div>
 
@@ -54,12 +54,12 @@ background-color: #24363D;
     </#if>
       <div class="container">
                 <div class="panel panel-default bg-neutral-8" id="mypanel" >
-                    <div class="panel-heading">Upload a File in order to get book recommendations based on that photo's location!!!</div>
+                    <div class="panel-heading">Upload a file in order to get book recommendations based on that photo's location!</div>
 
                         <div class="panel-body">
                             <form method="POST" enctype="multipart/form-data" action="/upload">
                                             <table>
-                                                <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
+                                                <tr><td>file to upload:</td><td><input type="file" name="file" /></td></tr>
                                                 <tr><td></td><td><input class="btn btn-primary" type="submit" value="Upload" id="submitButton" /></td></tr>
                                             </table>
                                  </form>

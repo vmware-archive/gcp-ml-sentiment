@@ -14,8 +14,7 @@ public class QueryResultsViewMapping {
     String bookName;
     String authorName;
     String bookLocation;
-    boolean hasMessages;
-    ArrayList<String> alerts;
+
 
     private static final String DEFAULT_VALUE = "(Not available)";
 

@@ -53,10 +53,11 @@ public class WebController {
         ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
 
         try {
+
             List<EntityAnnotation> landmarkInfoArray = vps.identifyLandmark(file.getBytes(), 10);
             EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
             String landmarkName = landmarkResult.getDescription();
-            System.out.println("Landmark (from Vision API): " + landmarkName);
+            redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
 
           BigQueryApiService bqs = new BigQueryApiService(landmarkName);
 
@@ -84,6 +85,8 @@ public class WebController {
         } catch (Exception e) {
             System.out.println("THERE WAS EXCEPTION");
             System.out.println(e);
+            redirectAttributes.addFlashAttribute("alert",
+                    "There was a problem processing your file, please try another image");
 
 
         }
