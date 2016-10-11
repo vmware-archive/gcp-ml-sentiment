@@ -44,7 +44,7 @@ public class QueryResultsViewMapping {
                 bookName = stringVal;
             } else if (count == 1) {
                 authorName = stringVal;
-            } else {
+            } else if (count == 2) {
                 bookLocation = stringVal;
             }
             count++;
