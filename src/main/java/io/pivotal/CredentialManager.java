@@ -35,6 +35,8 @@ import com.google.api.services.language.v1beta1.model.Sentiment;
 
 public class CredentialManager {
 
+	private static final String VCAP_KEY = "google-ml-apis"; // "user-provided";
+
 	public  CredentialManager() {
 
 	}
@@ -111,16 +113,11 @@ public class CredentialManager {
 		String env = System.getenv("VCAP_SERVICES");
 		System.out.println(env);
 		JSONObject json = new JSONObject(env);
-		JSONArray root = json.getJSONArray("user-provided");
+		JSONArray root = json.getJSONArray(VCAP_KEY);
 		System.out.println("root: " + root);
 		JSONObject obj0 = root.getJSONObject(0);
-		/*String credString = obj0.getString("credentials");
-		System.out.println("credString: " + credString);
-		JSONObject cred = new JSONObject(credString);
-		String rv = cred.getString("PrivateKeyData");*/
 		String rv = obj0.getJSONObject("credentials").getString("PrivateKeyData");
 		System.out.println("PrivateKeyData: " + rv);
-		//return cred.getString("PrivateKeyData");
 		return rv;
 	}
 
