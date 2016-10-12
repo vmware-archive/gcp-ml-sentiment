@@ -43,17 +43,17 @@ public class CredentialManager {
 
 	public CredentialManager() {
 		String env = System.getenv("VCAP_SERVICES");
-		System.out.println(env);
+		//System.out.println(env);
 		JSONObject json = new JSONObject(env);
 		JSONArray root = json.getJSONArray(VCAP_KEY);
-		System.out.println("root: " + root);
+		//System.out.println("root: " + root);
 		JSONObject obj0 = root.getJSONObject(0);
 		JSONObject cred = obj0.getJSONObject("credentials");
 		this.privateKeyData = cred.getString("PrivateKeyData");
 		String email = cred.getString("Email");
 		this.projectId = matchProjectId(email);
-		System.out.println("PrivateKeyData: " + privateKeyData);
-		System.out.println("project ID: " + projectId);
+		//System.out.println("PrivateKeyData: " + privateKeyData);
+		//System.out.println("project ID: " + projectId);
 	}
 
 	private String matchProjectId (String email) {
