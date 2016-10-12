@@ -36,7 +36,7 @@ import com.google.api.services.language.v1beta1.model.Sentiment;
  */
 
 public class CredentialManager {
-	
+
 	private static final String VCAP_KEY = "google-storage"; // "google-ml-apis", "user-provided"
 	private String privateKeyData;
 	private String projectId;

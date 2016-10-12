@@ -73,6 +73,7 @@ public class WebController {
                     redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
                     redirectAttributes.addFlashAttribute("bigQueryBytesProcessed", bqs.getTotalBytesProcessed());
                     redirectAttributes.addFlashAttribute("bigQueryIsCached", (bqs.isCached() ? "(cached)" : ""));
+                    redirectAttributes.addFlashAttribute("bigQueryDataSet", bqs.getDataSetName());
 
                     if (results != null) {
                         System.out.println(results.size());

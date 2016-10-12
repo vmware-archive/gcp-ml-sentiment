@@ -48,12 +48,14 @@ background-color: #fff;
 
 
                    <h1 class="col-md-16" >Found relevant books for Landmark:  <span class="em-max type-brand-8">${landmarkName}</span></h1>
-                   <p class="txt-r col-md-8">
+                   <p class="txt-l col-md-8">
                      <code>Vision API Processing Took: ${visionApiTiming} secs</code>
                      <br>
                      <code>BigQuery Processing Took: ${bigQueryApiTiming} secs</code>
                        <br>
                        <code>BigQuery Processed ${bigQueryBytesProcessed} bytes ${bigQueryIsCached}</code>
+                       <br>
+                       <code>Dataset: ${bigQueryDataSet}</code>
                    </p>
                    </div>
 
