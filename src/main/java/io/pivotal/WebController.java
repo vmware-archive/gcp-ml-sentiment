@@ -2,6 +2,8 @@ package io.pivotal;
 
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
+import com.google.appengine.repackaged.com.google.io.protocol.proto.ProtocolDescriptor;
+import io.pivotal.Domain.LabelResultsViewMapping;
 import io.pivotal.Domain.QueryResultsViewMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,6 +38,11 @@ public class WebController {
         return "results";
     }
 
+    @RequestMapping("/labels")
+    public String renderLabels(Model model) {
+        return "labels";
+    }
+
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
@@ -56,7 +63,7 @@ public class WebController {
                 if (visionApiResults == null) {
                     redirectAttributes.addFlashAttribute("alert",
                             "Google Vision API was not able to identify your image, please try another");
-                } else {
+                } else if (visionApiResults.size() == 1) {
                     System.out.println(visionApiResults);
                     EntityAnnotation landmarkResult = visionApiResults.get(0);
                     String landmarkName = landmarkResult.getDescription();
@@ -87,17 +94,25 @@ public class WebController {
 
                         return "redirect:/results";
                     } else {
-
                         redirectAttributes.addFlashAttribute("alert",
                                 "There was a problem processing your file, please try another image");                    }
+                } else {
+                    // Handle the case of multiple possible labels
+                    System.out.println("Preparing the labels view ...");
+                    ArrayList<LabelResultsViewMapping> labelResults = new ArrayList<LabelResultsViewMapping>();
+                    for (EntityAnnotation ea : visionApiResults) {
+                        LabelResultsViewMapping lab = new LabelResultsViewMapping(ea.getDescription(), ea.getScore());
+                        System.out.println(lab);
+                        labelResults.add(lab);
+                    }
+                    redirectAttributes.addFlashAttribute("labelResults", labelResults);
+                    return "redirect:/labels";
                 }
 
                 } catch(Exception e){
                     System.out.println(e.getMessage());
                     redirectAttributes.addFlashAttribute("alert",
                             "There was a problem processing your file, please try another image");
-
-
                 }
             } else{
                 redirectAttributes.addFlashAttribute("alert",

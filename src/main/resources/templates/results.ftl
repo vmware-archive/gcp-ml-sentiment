@@ -84,7 +84,6 @@ background-color: #fff;
                                   <td width="40%">${user.bookName}</td>
                                   <td width="20%">${user.authorName}</td>
                                   <td width="40%">${user.bookLocation}</td>
-
                                 </tr>
                             </#list>
                           </tbody>
