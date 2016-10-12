@@ -43,6 +43,7 @@ public class BigQueryApiService {
         this.query=  String.format(
                 "SELECT * FROM ("
                 + "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects, LENGTH(BookMeta_Title) title_len"
+                        // De-dupe based on the columns in the PARTITION BY clause
                         + ", ROW_NUMBER() OVER (PARTITION BY BookMeta_Title, BookMeta_Creator) AS rn"
                         + " FROM (TABLE_QUERY([" + dataSetName + "], "
                         + " 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"'))"
