@@ -29,14 +29,14 @@ background-color: #fff;
 
 </head>
 <body>
+
 <div class="pane pane-offset bg-dark-2">
 
 
     <div class="container bg-glow">
         <h1 id="flagShipText">Pivotal x Google Cloud Platform Landmark Vanguard</h1>
       </div>
-    </div>
-
+</div>
 
 <div id="pageBody" class="pane bg-cloud">
       <div class="container">
@@ -47,7 +47,10 @@ background-color: #fff;
                    <div class="panel-heading">
 
 
-                   <h1 class="col-md-16" >Found relevant books for Landmark:  <span class="em-max type-brand-8">${landmarkName}</span></h1>
+                   <h2 class="col-md-16" >
+                       Found relevant books for Landmark: <span class="em-max type-brand-8">${landmarkName}</span>
+                     <br>(Vision API Score: ${landmarkScore})
+                   </h2>
                    <p class="txt-l col-md-8">
                      <code>Vision API Processing Took: ${visionApiTiming} secs</code>
                      <br>
@@ -116,14 +119,6 @@ background-color: #fff;
 </div>
       </div>
 </div>
-
-
-
-
-
-
-
-
 </body>
 <script>
 var maps = (function() {

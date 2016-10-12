@@ -36,18 +36,18 @@ public class VisionApiService {
         return responseResults;
     }
 
+    // This is used only in the tests
     public List<EntityAnnotation> requestPhotoLabelInfo(byte [] rawImage) throws IOException, GeneralSecurityException {
 
 
-        List<EntityAnnotation> responseResults  = labelImage(rawImage,10);
+        List<EntityAnnotation> responseResults  = labelImage(rawImage, 10);
         for (EntityAnnotation annotation : responseResults) {
-            System.out.printf("\t%s\n", annotation.getDescription());
+            System.out.println("Description: \"" + annotation.getDescription() + "\", Confidence: " + annotation.getConfidence()
+            + ", " + annotation.getScore());
         }
 
         return responseResults;
     }
-
-
 
     public List<EntityAnnotation> identifyLandmark(byte [] rawImage, int maxResults)  {
         List<EntityAnnotation> visionApiResults = null;
@@ -61,9 +61,9 @@ public class VisionApiService {
                     new AnnotateImageRequest()
                             .setImage(new Image().encodeContent(rawImage))
                             .setFeatures(ImmutableList.of(
-                                    new Feature()
-                                            .setType("LANDMARK_DETECTION")
-                                            .setMaxResults(maxResults)));
+                                    new Feature().setType("LANDMARK_DETECTION").setMaxResults(maxResults),
+                                    new Feature().setType("LABEL_DETECTION").setMaxResults(maxResults)
+                            ));
             Vision.Images.Annotate annotate =
                     vision.images()
                             .annotate(new BatchAnnotateImagesRequest().setRequests(ImmutableList.of(request)));
@@ -75,7 +75,13 @@ public class VisionApiService {
             AnnotateImageResponse response = batchResponse.getResponses().get(0);
 
             visionApiResults = response.getLandmarkAnnotations();
-
+            // No landmark detected?  Fall back to label detection.
+            if (visionApiResults == null) {
+                visionApiResults = response.getLabelAnnotations();
+            }
+            for (EntityAnnotation annotation : visionApiResults) {
+                System.out.println("Description: \"" + annotation.getDescription() + "\", Score: " + getScoreAsPercent(annotation));
+            }
 
         } catch (Exception e) {
                 System.out.println(e);
@@ -83,6 +89,10 @@ public class VisionApiService {
         return visionApiResults;
     }
 
+    // Return a percent value, with '%'
+    public static String getScoreAsPercent (EntityAnnotation entityAnnotation) {
+        return String.format("%d%%", (int) (100.0 * entityAnnotation.getScore()));
+    }
 
     public List<EntityAnnotation> labelImage(byte [] rawImage, int maxResults) throws IOException, GeneralSecurityException {
         // [START construct_request]
@@ -95,7 +105,7 @@ public class VisionApiService {
                         .setImage(new Image().encodeContent(rawImage))
                         .setFeatures(ImmutableList.of(
                                 new Feature()
-                                        .setType("LABEL_DETECTION")
+                                        .setType("LANDMARK_DETECTION")
                                         .setMaxResults(maxResults)));
         Vision.Images.Annotate annotate =
                 vision.images()

@@ -48,8 +48,10 @@ public class WebController {
                 visionApiStopwatch.start();
 
                 List<EntityAnnotation> visionApiResults = vps.identifyLandmark(file.getBytes(), 10);
-
                 visionApiStopwatch.stop();
+
+                // Need to see what type of results we have here: landmark, or label detection
+                // This will depend on the size of visionApiResults: (1) -> landmark; (2) -> label (multiple)
 
                 if (visionApiResults == null) {
                     redirectAttributes.addFlashAttribute("alert",
@@ -62,6 +64,7 @@ public class WebController {
                     redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
                     redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
                     redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
+                    redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
 
                     BigQueryApiService bqs = new BigQueryApiService(landmarkName);
                     StopWatch biqQueryStopwatch = new StopWatch();
@@ -90,7 +93,7 @@ public class WebController {
                 }
 
                 } catch(Exception e){
-                    System.out.println(e);
+                    System.out.println(e.getMessage());
                     redirectAttributes.addFlashAttribute("alert",
                             "There was a problem processing your file, please try another image");
 
