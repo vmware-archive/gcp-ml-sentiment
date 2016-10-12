@@ -41,10 +41,14 @@ public class BigQueryApiService {
 
     public BigQueryApiService(String landmarkName) {
         this.query=  String.format(
-                "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects, LENGTH(BookMeta_Title) title_len"
+                "SELECT * FROM ("
+                + "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects, LENGTH(BookMeta_Title) title_len"
+                        + ", ROW_NUMBER() OVER (PARTITION BY BookMeta_Title, BookMeta_Creator) AS rn"
                         + " FROM (TABLE_QUERY([" + dataSetName + "], "
                         + " 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"'))"
                         + " WHERE (REGEXP_MATCH(LOWER(CONCAT(BookMeta_Title, ' ', BookMeta_Subjects)), r'%s'))"
+                        + ") b" +
+                        " WHERE b.rn = 1"
                         + " ORDER BY title_len ASC"
                         + " LIMIT 20"
                 , landmarkName.toLowerCase().replace("'", "\\'").replaceAll(" +", "\\\\s+"));
