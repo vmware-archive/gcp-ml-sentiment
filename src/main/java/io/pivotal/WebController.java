@@ -63,7 +63,7 @@ public class WebController {
                 if (visionApiResults == null) {
                     redirectAttributes.addFlashAttribute("alert",
                             "Google Vision API was not able to identify your image, please try another");
-                } else if (visionApiResults.size() == 1) {
+                } else if (visionApiResults.size() > 0 && visionApiResults.get(0).getLocations() != null) {
                     System.out.println(visionApiResults);
                     EntityAnnotation landmarkResult = visionApiResults.get(0);
                     String landmarkName = landmarkResult.getDescription();
