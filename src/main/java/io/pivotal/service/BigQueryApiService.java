@@ -17,6 +17,7 @@ import com.google.api.services.bigquery.model.QueryResponse;
 import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableRow;
 import io.pivotal.CredentialManager;
+import io.pivotal.Domain.LandmarkNameWithScore;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,15 +40,35 @@ public class BigQueryApiService {
         return dataSetName;
     }
 
+    public BigQueryApiService(List<LandmarkNameWithScore> lwsList) {
+        String landMarkName = "";
+        if (lwsList.size() > 1) {
+            for (LandmarkNameWithScore lws : lwsList) {
+                if (landMarkName.length() > 0) {
+                    landMarkName += '|'; // Building an OR for the regular expression
+                }
+                landMarkName += lws.getName();
+            }
+            landMarkName = '(' + landMarkName + ')';
+        } else {
+            landMarkName = lwsList.get(0).getName();
+        }
+        setQuery(landMarkName);
+    }
+
     public BigQueryApiService(String landmarkName) {
-        this.query=  String.format(
+        setQuery(landmarkName);
+    }
+
+    private void setQuery(String landmarkName) {
+        this.query = String.format(
                 "SELECT * FROM ("
-                + "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects, LENGTH(BookMeta_Title) title_len"
+                        + "SELECT BookMeta_Title, BookMeta_Creator, BookMeta_Subjects, LENGTH(BookMeta_Title) title_len"
                         // De-dupe based on the columns in the PARTITION BY clause
                         + ", ROW_NUMBER() OVER (PARTITION BY BookMeta_Title, BookMeta_Creator) AS rn"
                         + " FROM (TABLE_QUERY([" + dataSetName + "], "
                         + " 'REGEXP_EXTRACT(table_id, r\"(\\d{4})\") BETWEEN \"1819\" AND \"2014\"'))"
-                        + " WHERE (REGEXP_MATCH(LOWER(CONCAT(BookMeta_Title, ' ', BookMeta_Subjects)), r'%s'))"
+                        + " WHERE (REGEXP_MATCH(LOWER(CONCAT(BookMeta_Title, ' ', BookMeta_Subjects)), r'\\b%s\\b'))"
                         + ") b" +
                         " WHERE b.rn = 1"
                         + " ORDER BY title_len ASC"

@@ -4,6 +4,7 @@ import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 import com.google.appengine.repackaged.com.google.io.protocol.proto.ProtocolDescriptor;
 import io.pivotal.Domain.LabelResultsViewMapping;
+import io.pivotal.Domain.LandmarkNameWithScore;
 import io.pivotal.Domain.QueryResultsViewMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -65,15 +66,26 @@ public class WebController {
                             "Google Vision API was not able to identify your image, please try another");
                 } else if (visionApiResults.size() > 0 && visionApiResults.get(0).getLocations() != null) {
                     System.out.println(visionApiResults);
+                    String landmarkName = "";
+                    List<LandmarkNameWithScore> landmarkList = new ArrayList<LandmarkNameWithScore>();
+                    for (EntityAnnotation ea : visionApiResults) {
+                        LandmarkNameWithScore lws = new LandmarkNameWithScore(ea.getDescription(), ea.getScore());
+                        if (landmarkName.length() > 0) {
+                            landmarkName += ", ";
+                        }
+                        landmarkName += lws.toString();
+                        landmarkList.add(lws);
+                    }
                     EntityAnnotation landmarkResult = visionApiResults.get(0);
-                    String landmarkName = landmarkResult.getDescription();
-                    System.out.println(landmarkName);
+                    //String landmarkName = landmarkResult.getDescription();
+                    System.out.println("Landmark name: \"" + landmarkName + "\"");
                     redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
                     redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
                     redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
-                    redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
+                    //redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
 
-                    BigQueryApiService bqs = new BigQueryApiService(landmarkName);
+                    //BigQueryApiService bqs = new BigQueryApiService(landmarkName);
+                    BigQueryApiService bqs = new BigQueryApiService(landmarkList);
                     StopWatch biqQueryStopwatch = new StopWatch();
                     biqQueryStopwatch.start();
                     List<TableRow> results = bqs.executeQuery();

@@ -49,7 +49,6 @@ background-color: #fff;
 
                    <h2 class="col-md-16" >
                        Found relevant books for Landmark: <span class="em-max type-brand-8">${landmarkName}</span>
-                     <br>(Vision API Score: ${landmarkScore})
                    </h2>
                    <p class="txt-l col-md-8">
                      <code>Vision API Processing Took: ${visionApiTiming} secs</code>
