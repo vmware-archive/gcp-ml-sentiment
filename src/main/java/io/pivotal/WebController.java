@@ -1,7 +1,9 @@
 package io.pivotal;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -84,7 +86,15 @@ public class WebController {
                     System.out.println(visionApiResults);
                     String landmarkName = "";
                     List<LandmarkNameWithScore> landmarkList = new ArrayList<LandmarkNameWithScore>();
+                    Set<String> landmarkSet = new HashSet<>();
                     for (EntityAnnotation ea : visionApiResults) {
+                        // This is to de-dupe the returned landmark names, since we saw to "Eiffel Tower" values returned
+                        String normalizedName = ea.getDescription().toLowerCase().replaceAll("[^a-z0-9]", "");
+                        if (landmarkSet.contains(normalizedName)) {
+                            continue;
+                        } else {
+                            landmarkSet.add(normalizedName);
+                        }
                         LandmarkNameWithScore lws = new LandmarkNameWithScore(ea.getDescription(), ea.getScore());
                         if (landmarkName.length() > 0) {
                             landmarkName += ", ";
