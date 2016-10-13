@@ -69,7 +69,7 @@
                         <div class="panel panel-clickable-alt">
                            <div class="panel-body">
                               <h4>Welcome to Landmark Vanguard</h4>
-                              <p>The purpose of this platform is to allow users to explore Google's Machine Learning Capabilities with regards to image processing</p>
+                              <p>The purpose of this platform is to allow users to explore Google's Machine Learning Capabilities with regards to image processing.</p>
                               <br>
                               <p>If you are interested in a particular landmark or place of interest, upload your image here and our platform will provide for you a recommended list of books to read about that specific landmark.</p>
                            </div>
