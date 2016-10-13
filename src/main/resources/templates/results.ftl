@@ -85,37 +85,40 @@ background-color: #fff;
                                   <td width="40%">${user.bookLocation}</td>
                                 </tr>
                             </#list>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-
+                        </tbody>
+                    </table>
                 </div>
-         </div>
-<div class='map-wrapper'>
-  <div class='pane'>
-    <div class='container pan'>
-      <div class='row'>
-        <div class='col-sm-6 col-md-8 col-sm-offset-1'>
-          <div class='map-overlay panel panel-basic bg-neutral-10'>
-            <div class='panel-body paxxl'>
-              <h3 class="h2">Location</h3>
-              <address class='h4 pvl'>${landmarkName}<br>
-                
-              </address>
+			</div>
 
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class='pane pane-map'>
-    <div class='labs-map' id='my-google-map'></div>
-  </div>
-</div>
-      </div>
+
+		</div>
+	</div>
+         
+	<div class='map-wrapper'>
+  		<div class='pane'>
+    		<div class='container pan'>
+      			<div class='row'>
+        			<div class='col-sm-6 col-md-8 col-sm-offset-1'>
+          				<div class='map-overlay panel panel-basic bg-neutral-10'>
+            				<div class='panel-body paxxl'>
+              					<h3 class="h2">Location</h3>
+              					<address class='h4 pvl'>${landmarkName}<br>
+                
+              					</address>
+
+            				</div>
+          				</div>
+        			</div>
+      			</div>
+    		</div>
+  		</div>
+  		<div style="background-image:url('${imageUrl}'); background-size: contain; height:450px; float:left">
+  			<img src="${imageUrl}" width="auto" height="450px">
+  		</div>
+  		<div class='pane pane-map'>
+    		<div class='labs-map' id='my-google-map'></div>
+  		</div>
+	</div>
 </div>
 </body>
 <script>

@@ -3,32 +3,28 @@ package io.pivotal;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.GeneralSecurityException;
 import java.util.Base64;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.services.bigquery.Bigquery;
-import com.google.api.services.bigquery.BigqueryScopes;
-import com.google.api.services.vision.v1.Vision;
-import com.google.api.services.vision.v1.VisionScopes;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.bigquery.Bigquery;
 import com.google.api.services.language.v1beta1.CloudNaturalLanguageAPI;
 import com.google.api.services.language.v1beta1.CloudNaturalLanguageAPIScopes;
-import com.google.api.services.language.v1beta1.model.AnalyzeSentimentRequest;
-import com.google.api.services.language.v1beta1.model.AnalyzeSentimentResponse;
-import com.google.api.services.language.v1beta1.model.Document;
-import com.google.api.services.language.v1beta1.model.Sentiment;
+import com.google.api.services.storage.Storage;
+import com.google.api.services.storage.StorageScopes;
+import com.google.api.services.vision.v1.Vision;
 
 /*
  * Google API: https://developers.google.com/api-client-library/java/
@@ -114,6 +110,16 @@ public class CredentialManager {
 				.build();
 	}
 
+	public Storage getStorageClient() throws IOException {
+            HttpTransport transport = new NetHttpTransport();
+            JsonFactory jsonFactory = new JacksonFactory();
+            GoogleCredential cred = credential();
+	        if (cred.createScopedRequired()) {
+	            cred = cred.createScoped(StorageScopes.all());
+	        }
+	        return new Storage.Builder(transport, jsonFactory, cred)
+	        .setApplicationName(APP_NAME).build();
+	}
 
 	private static GoogleCredential credential = null;
 	private static final String APP_NAME = "spring-nlp";

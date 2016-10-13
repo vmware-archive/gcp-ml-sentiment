@@ -1,11 +1,9 @@
 package io.pivotal;
 
-import com.google.api.services.bigquery.model.TableRow;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
-import com.google.appengine.repackaged.com.google.io.protocol.proto.ProtocolDescriptor;
-import io.pivotal.Domain.LabelResultsViewMapping;
-import io.pivotal.Domain.LandmarkNameWithScore;
-import io.pivotal.Domain.QueryResultsViewMapping;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StopWatch;
@@ -14,11 +12,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import io.pivotal.service.*;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
+
+import com.google.api.services.bigquery.model.TableRow;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+
+import io.pivotal.Domain.LabelResultsViewMapping;
+import io.pivotal.Domain.LandmarkNameWithScore;
+import io.pivotal.Domain.QueryResultsViewMapping;
+import io.pivotal.service.BigQueryApiService;
+import io.pivotal.service.StorageApiService;
+import io.pivotal.service.VisionApiService;
 
 /**
  * Created by mross on 10/10/16.
@@ -27,6 +30,8 @@ import java.util.List;
 @Controller
 public class WebController {
 
+    @Value("${gcp-storage-bucket}")
+    private String bucketName;
 
     @RequestMapping("/")
     public String renderIndex(Model model) {
@@ -50,6 +55,17 @@ public class WebController {
                                    RedirectAttributes redirectAttributes) {
 
         if (file.getSize() < 4000000 ) {
+
+            StorageApiService storage = new StorageApiService();
+            if (storage.upload(file, bucketName)) {
+		redirectAttributes.addFlashAttribute("imageUrl",
+			StorageApiService.getPublicUrl(bucketName, file.getOriginalFilename()));
+            } else {
+                // TODO(dana): Add a better error message
+                redirectAttributes.addFlashAttribute("alert", "File upload failed");
+                return "redirect:/";
+            }
+
             try {
                 VisionApiService vps = new VisionApiService();
                 StopWatch visionApiStopwatch = new StopWatch();
