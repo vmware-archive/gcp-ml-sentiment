@@ -20,23 +20,7 @@ public class StorageApiService {
 	StorageObject objectMetadata = new StorageObject().setName(name)
 		.setAcl(Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER")));
 
-	String type = null;
-	String suffix = name.substring(name.indexOf(".") + 1);
-	switch (suffix) {
-	case "jpg":
-	case "jpeg":
-	    type = "image/jpeg";
-	    break;
-	case "png":
-	    type = "image/png";
-	    break;
-	case "gif":
-	    type = "image/gif";
-	    break;
-	}
-	if (type == null) {
-	    return false;
-	}
+	String type = file.getContentType();
 	if (bucket == null) {
 	    return false;
 	}
