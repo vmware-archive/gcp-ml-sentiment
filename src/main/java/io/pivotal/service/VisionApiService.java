@@ -1,19 +1,21 @@
 package io.pivotal.service;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.vision.v1.Vision;
-import com.google.api.services.vision.v1.VisionScopes;
-import com.google.api.services.vision.v1.model.*;
-import com.google.common.collect.ImmutableList;
-import io.pivotal.CredentialManager;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
 import java.util.List;
+
+import com.google.api.services.vision.v1.Vision;
+import com.google.api.services.vision.v1.model.AnnotateImageRequest;
+import com.google.api.services.vision.v1.model.AnnotateImageResponse;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
+import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import com.google.api.services.vision.v1.model.Feature;
+import com.google.api.services.vision.v1.model.Image;
+import com.google.api.services.vision.v1.model.ImageSource;
+import com.google.common.collect.ImmutableList;
+
+import io.pivotal.CredentialManager;
 
 
 /**
@@ -49,7 +51,17 @@ public class VisionApiService {
         return responseResults;
     }
 
+    public List<EntityAnnotation> identifyLandmark(String gcsUrl, int maxResults) {
+        Image image = new Image().setSource(new ImageSource().setGcsImageUri(gcsUrl));
+        return identifyLandmark(image, maxResults);
+    }
+
     public List<EntityAnnotation> identifyLandmark(byte [] rawImage, int maxResults)  {
+	Image image = new Image().encodeContent(rawImage);
+	return identifyLandmark(image, maxResults);
+    }
+
+    private List<EntityAnnotation> identifyLandmark(Image image, int maxResults) {
         List<EntityAnnotation> visionApiResults = null;
 
         try {
@@ -59,7 +71,7 @@ public class VisionApiService {
             Vision vision = credentialManager.getVisionService();
             AnnotateImageRequest request =
                     new AnnotateImageRequest()
-                            .setImage(new Image().encodeContent(rawImage))
+                            .setImage(image)
                             .setFeatures(ImmutableList.of(
                                     new Feature().setType("LANDMARK_DETECTION").setMaxResults(maxResults),
                                     new Feature().setType("LABEL_DETECTION").setMaxResults(maxResults)

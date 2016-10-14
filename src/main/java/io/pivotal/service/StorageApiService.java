@@ -2,6 +2,10 @@ package io.pivotal.service;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +36,19 @@ public class StorageApiService {
 	    return false;
 	}
 	return true;
+    }
+
+    public Map<String, String> getUploadedImages(String bucket) {
+	try {
+	    List<StorageObject> objects = CREDENTIAL_MANAGER.getStorageClient().objects().list(bucket).execute()
+		    .getItems();
+	    Map<String, String> images = objects.stream().collect(
+		    Collectors.toMap(s -> s.getId().substring(s.getId().lastIndexOf("/") + 1), StorageObject::getName));
+	    return images;
+	} catch (IOException e) {
+	    System.err.println(e);
+	    return new HashMap<>();
+	}
     }
 
     public static String getPublicUrl(String bucket, String object) {

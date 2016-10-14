@@ -3,12 +3,15 @@ package io.pivotal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StopWatch;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,9 +38,16 @@ public class WebController {
     @Value("${gcp-storage-bucket}")
     private String bucketName;
 
+    private StorageApiService storage = new StorageApiService();
+
+    private Map<String, String> imageIdToName;
+
     @RequestMapping("/")
     public String renderIndex(Model model) {
-
+	imageIdToName = storage.getUploadedImages(bucketName);
+	Map<String, String> imageUrlToId = imageIdToName.entrySet().stream().collect(
+		Collectors.toMap(s -> StorageApiService.getPublicUrl(bucketName, s.getValue()), s -> s.getKey()));
+	model.addAttribute("images", imageUrlToId);
         return "index";
     }
 
@@ -51,6 +61,21 @@ public class WebController {
         return "labels";
     }
 
+    @RequestMapping(value = "/result/{imageId}")
+    public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
+	String imageName = imageIdToName.get(imageId);
+	String publicUrl = StorageApiService.getPublicUrl(bucketName, imageName);
+	redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
+
+	String gcsUrl = String.format("gs://%s/%s", bucketName, imageName);
+	VisionApiService vps = new VisionApiService();
+        StopWatch visionApiStopwatch = new StopWatch();
+        visionApiStopwatch.start();
+
+        List<EntityAnnotation> visionApiResults = vps.identifyLandmark(gcsUrl, 10);
+        visionApiStopwatch.stop();
+        return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
+    }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
@@ -58,7 +83,6 @@ public class WebController {
 
         if (file.getSize() < 4000000 ) {
 
-            StorageApiService storage = new StorageApiService();
             if (storage.upload(file, bucketName)) {
 		redirectAttributes.addFlashAttribute("imageUrl",
 			StorageApiService.getPublicUrl(bucketName, file.getOriginalFilename()));
@@ -75,88 +99,91 @@ public class WebController {
 
                 List<EntityAnnotation> visionApiResults = vps.identifyLandmark(file.getBytes(), 10);
                 visionApiStopwatch.stop();
-
-                // Need to see what type of results we have here: landmark, or label detection
-                // This will depend on the size of visionApiResults: (1) -> landmark; (2) -> label (multiple)
-
-                if (visionApiResults == null) {
-                    redirectAttributes.addFlashAttribute("alert",
-                            "Google Vision API was not able to identify your image, please try another");
-                } else if (visionApiResults.size() > 0 && visionApiResults.get(0).getLocations() != null) {
-                    System.out.println(visionApiResults);
-                    String landmarkName = "";
-                    List<LandmarkNameWithScore> landmarkList = new ArrayList<LandmarkNameWithScore>();
-                    Set<String> landmarkSet = new HashSet<>();
-                    for (EntityAnnotation ea : visionApiResults) {
-                        // This is to de-dupe the returned landmark names, since we saw to "Eiffel Tower" values returned
-                        String normalizedName = ea.getDescription().toLowerCase().replaceAll("[^a-z0-9]", "");
-                        if (landmarkSet.contains(normalizedName)) {
-                            continue;
-                        } else {
-                            landmarkSet.add(normalizedName);
-                        }
-                        LandmarkNameWithScore lws = new LandmarkNameWithScore(ea.getDescription(), ea.getScore());
-                        if (landmarkName.length() > 0) {
-                            landmarkName += ", ";
-                        }
-                        landmarkName += lws.toString();
-                        landmarkList.add(lws);
-                    }
-                    EntityAnnotation landmarkResult = visionApiResults.get(0);
-                    //String landmarkName = landmarkResult.getDescription();
-                    System.out.println("Landmark name: \"" + landmarkName + "\"");
-                    redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
-                    redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
-                    redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
-                    //redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
-
-                    //BigQueryApiService bqs = new BigQueryApiService(landmarkName);
-                    BigQueryApiService bqs = new BigQueryApiService(landmarkList);
-                    StopWatch biqQueryStopwatch = new StopWatch();
-                    biqQueryStopwatch.start();
-                    List<TableRow> results = bqs.executeQuery();
-                    biqQueryStopwatch.stop();
-
-                    redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
-                    redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
-                    redirectAttributes.addFlashAttribute("bigQueryBytesProcessed", bqs.getTotalBytesProcessed());
-                    redirectAttributes.addFlashAttribute("bigQueryIsCached", (bqs.isCached() ? "(cached)" : ""));
-                    redirectAttributes.addFlashAttribute("bigQueryDataSet", bqs.getDataSetName());
-
-                    if (results != null) {
-                        System.out.println(results.size());
-
-                        ArrayList<QueryResultsViewMapping> queryResults = mapResultSetToList(results);
-                        redirectAttributes.addFlashAttribute("queryResults",
-                                queryResults);
-
-                        return "redirect:/results";
-                    } else {
-                        redirectAttributes.addFlashAttribute("alert",
-                                "There was a problem processing your file, please try another image");                    }
-                } else {
-                    // Handle the case of multiple possible labels
-                    System.out.println("Preparing the labels view ...");
-                    ArrayList<LabelResultsViewMapping> labelResults = new ArrayList<LabelResultsViewMapping>();
-                    for (EntityAnnotation ea : visionApiResults) {
-                        LabelResultsViewMapping lab = new LabelResultsViewMapping(ea.getDescription(), ea.getScore());
-                        System.out.println(lab);
-                        labelResults.add(lab);
-                    }
-                    redirectAttributes.addFlashAttribute("labelResults", labelResults);
-                    return "redirect:/labels";
-                }
-
-                } catch(Exception e){
-                    System.out.println(e.getMessage());
-                    redirectAttributes.addFlashAttribute("alert",
-                            "There was a problem processing your file, please try another image");
-                }
-            } else{
+                return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
+            } catch(Exception e){
+                System.out.println(e.getMessage());
                 redirectAttributes.addFlashAttribute("alert",
-                        "The max file upload size is 4mb, please try a smaller image");
+                        "There was a problem processing your file, please try another image");
             }
+        } else {
+            redirectAttributes.addFlashAttribute("alert",
+                    "The max file upload size is 4mb, please try a smaller image");
+        }
+        return "redirect:/";
+    }
+  
+    private String displayResult(List<EntityAnnotation> visionApiResults, StopWatch visionApiStopwatch,
+	    RedirectAttributes redirectAttributes) {
+        // Need to see what type of results we have here: landmark, or label detection
+        // This will depend on the size of visionApiResults: (1) -> landmark; (2) -> label (multiple)
 
+        if (visionApiResults == null) {
+            redirectAttributes.addFlashAttribute("alert",
+                    "Google Vision API was not able to identify your image, please try another");
+        } else if (visionApiResults.size() > 0 && visionApiResults.get(0).getLocations() != null) {
+            System.out.println(visionApiResults);
+            String landmarkName = "";
+            List<LandmarkNameWithScore> landmarkList = new ArrayList<LandmarkNameWithScore>();
+            Set<String> landmarkSet = new HashSet<>();
+            for (EntityAnnotation ea : visionApiResults) {
+                // This is to de-dupe the returned landmark names, since we saw to "Eiffel Tower" values returned
+                String normalizedName = ea.getDescription().toLowerCase().replaceAll("[^a-z0-9]", "");
+                if (landmarkSet.contains(normalizedName)) {
+                    continue;
+                } else {
+                    landmarkSet.add(normalizedName);
+                }
+                LandmarkNameWithScore lws = new LandmarkNameWithScore(ea.getDescription(), ea.getScore());
+                if (landmarkName.length() > 0) {
+                    landmarkName += ", ";
+                }
+                landmarkName += lws.toString();
+                landmarkList.add(lws);
+            }
+            EntityAnnotation landmarkResult = visionApiResults.get(0);
+            //String landmarkName = landmarkResult.getDescription();
+            System.out.println("Landmark name: \"" + landmarkName + "\"");
+            redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
+            redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
+            redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
+            //redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
+
+            //BigQueryApiService bqs = new BigQueryApiService(landmarkName);
+            BigQueryApiService bqs = new BigQueryApiService(landmarkList);
+            StopWatch biqQueryStopwatch = new StopWatch();
+            biqQueryStopwatch.start();
+            List<TableRow> results = bqs.executeQuery();
+            biqQueryStopwatch.stop();
+
+            redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
+            redirectAttributes.addFlashAttribute("bigQueryApiTiming", biqQueryStopwatch.getTotalTimeSeconds());
+            redirectAttributes.addFlashAttribute("bigQueryBytesProcessed", bqs.getTotalBytesProcessed());
+            redirectAttributes.addFlashAttribute("bigQueryIsCached", (bqs.isCached() ? "(cached)" : ""));
+            redirectAttributes.addFlashAttribute("bigQueryDataSet", bqs.getDataSetName());
+
+            if (results != null) {
+                System.out.println(results.size());
+
+                ArrayList<QueryResultsViewMapping> queryResults = mapResultSetToList(results);
+                redirectAttributes.addFlashAttribute("queryResults",
+                        queryResults);
+
+                return "redirect:/results";
+            } else {
+                redirectAttributes.addFlashAttribute("alert",
+                        "There was a problem processing your file, please try another image");                    }
+        } else {
+            // Handle the case of multiple possible labels
+            System.out.println("Preparing the labels view ...");
+            ArrayList<LabelResultsViewMapping> labelResults = new ArrayList<LabelResultsViewMapping>();
+            for (EntityAnnotation ea : visionApiResults) {
+                LabelResultsViewMapping lab = new LabelResultsViewMapping(ea.getDescription(), ea.getScore());
+                System.out.println(lab);
+                labelResults.add(lab);
+            }
+            redirectAttributes.addFlashAttribute("labelResults", labelResults);
+            return "redirect:/labels";
+        }
         return "redirect:/";
     }
 

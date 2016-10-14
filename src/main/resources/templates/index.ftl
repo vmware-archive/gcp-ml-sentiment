@@ -12,6 +12,12 @@
 		body {
 			background-color: #fcfcfc;
 		}
+		.thumbnail {
+			width: 200px;
+		}
+		.thumbnail:hover {
+			opacity:0.8;
+		}
 	</style>
 </head>
 <body>
@@ -23,23 +29,12 @@
 
 <div class="container">
 	<div class="section">
-      <!-- <div id="pageBody" class="pane bg-cloud"> -->
          <#if alert??>
          <div class="row">
          	<div class="col s12 red lighten-1">
          		<i class="error"></i>${alert}
          	</div>
          </div>
-         <!-- <div class="alert alert-error">
-            <div class="media mtn">
-               <div class="media-left">
-                  <i class="fa alert-icon fa-exclamation-triangle"></i>
-               </div>
-               <div class="media-body em-high">
-                  <p>${alert}</p>
-               </div>
-            </div>
-         </div> -->
          </#if>
          <div class="row">
          	<div class="col s6">
@@ -51,6 +46,13 @@
                 <p>If you are interested in a particular landmark or place of interest, upload your image here and our platform will provide for you a recommended list of books to read about that specific landmark.</p>
          	</div>
 			<div class="col s6">
+			    <h5>Sample Images</h5>
+				<#list images?keys as url>
+					<a href="/result/${images[url]}"><img src="${url}" class="thumbnail"></a>
+				</#list>
+
+				<div class="divider"></div>
+				<h5>Upload your own image</h5>
 				<form method="POST" enctype="multipart/form-data" action="/upload">
 					<div class="file-field input-field">
 						<!-- <div class="btn">
