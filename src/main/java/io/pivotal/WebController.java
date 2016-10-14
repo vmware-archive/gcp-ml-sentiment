@@ -161,17 +161,13 @@ public class WebController {
             redirectAttributes.addFlashAttribute("bigQueryIsCached", (bqs.isCached() ? "(cached)" : ""));
             redirectAttributes.addFlashAttribute("bigQueryDataSet", bqs.getDataSetName());
 
+            ArrayList<QueryResultsViewMapping> queryResults = null;
             if (results != null) {
                 System.out.println(results.size());
-
-                ArrayList<QueryResultsViewMapping> queryResults = mapResultSetToList(results);
-                redirectAttributes.addFlashAttribute("queryResults",
-                        queryResults);
-
-                return "redirect:/results";
-            } else {
-                redirectAttributes.addFlashAttribute("alert",
-                        "There was a problem processing your file, please try another image");                    }
+                queryResults = mapResultSetToList(results);
+            }
+            redirectAttributes.addFlashAttribute("queryResults", queryResults);
+            return "redirect:/results";
         } else {
             // Handle the case of multiple possible labels
             System.out.println("Preparing the labels view ...");
