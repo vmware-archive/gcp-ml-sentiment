@@ -1,6 +1,7 @@
 #!/bin/bash
 
-app_name="gcp-next-demo"
+#app_name="gcp-next-demo"
+app_name="landmarks"
 
 #service="gcp-ml"
 #service="gcp-ml-cups"

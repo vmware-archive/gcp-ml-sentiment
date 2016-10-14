@@ -20,38 +20,38 @@ public class StorageApiService {
     private static final CredentialManager CREDENTIAL_MANAGER = new CredentialManager();
 
     public boolean upload(MultipartFile file, String bucket) {
-	String name = file.getOriginalFilename();
-	StorageObject objectMetadata = new StorageObject().setName(name)
-		.setAcl(Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER")));
+        String name = file.getOriginalFilename();
+        StorageObject objectMetadata = new StorageObject().setName(name)
+                .setAcl(Arrays.asList(new ObjectAccessControl().setEntity("allUsers").setRole("READER")));
 
-	String type = file.getContentType();
-	if (bucket == null) {
-	    return false;
-	}
-	try {
-	    InputStreamContent content = new InputStreamContent(type, file.getInputStream());
-	    CREDENTIAL_MANAGER.getStorageClient().objects().insert(bucket, objectMetadata, content).setName(name).execute();
-	} catch (IOException e) {
-	    System.err.println(e);
-	    return false;
-	}
-	return true;
+        String type = file.getContentType();
+        if (bucket == null) {
+            return false;
+        }
+        try {
+            InputStreamContent content = new InputStreamContent(type, file.getInputStream());
+            CREDENTIAL_MANAGER.getStorageClient().objects().insert(bucket, objectMetadata, content).setName(name).execute();
+        } catch (IOException e) {
+            System.err.println(e);
+            return false;
+        }
+        return true;
     }
 
     public Map<String, String> getUploadedImages(String bucket) {
-	try {
-	    List<StorageObject> objects = CREDENTIAL_MANAGER.getStorageClient().objects().list(bucket).execute()
-		    .getItems();
-	    Map<String, String> images = objects.stream().collect(
-		    Collectors.toMap(s -> s.getId().substring(s.getId().lastIndexOf("/") + 1), StorageObject::getName));
-	    return images;
-	} catch (IOException e) {
-	    System.err.println(e);
-	    return new HashMap<>();
-	}
+        try {
+            List<StorageObject> objects = CREDENTIAL_MANAGER.getStorageClient().objects().list(bucket).execute()
+                    .getItems(); // It seems that a NPE is possible here, if there are no images
+            Map<String, String> images = objects.stream().collect(
+                    Collectors.toMap(s -> s.getId().substring(s.getId().lastIndexOf("/") + 1), StorageObject::getName));
+            return images;
+        } catch (Exception e) {
+            System.err.println(e);
+            return new HashMap<>();
+        }
     }
 
     public static String getPublicUrl(String bucket, String object) {
-	return String.format("http://storage.googleapis.com/%s/%s", bucket, object);
+        return String.format("http://storage.googleapis.com/%s/%s", bucket, object);
     }
 }
