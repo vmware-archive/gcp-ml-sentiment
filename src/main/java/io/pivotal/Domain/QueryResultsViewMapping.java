@@ -15,7 +15,7 @@ public class QueryResultsViewMapping {
     String authorName;
     String bookLocation;
 
-
+    private static final int MAX_STRING_LEN = 48;
     private static final String DEFAULT_VALUE = "(Not available)";
 
     public QueryResultsViewMapping() {
@@ -26,19 +26,22 @@ public class QueryResultsViewMapping {
     }
 
     public QueryResultsViewMapping(TableRow rows) {
-        int count =0;
+        int count = 0;
 
-        for (TableCell cell: rows.getF()) {
+        for (TableCell cell : rows.getF()) {
             // Why are we seeing "author = java.lang.Object@3d347088"?
             Object cellObj = cell.getV();
             String stringVal = DEFAULT_VALUE;
             if (cellObj != null) {
                 stringVal = cell.getV().toString();
+                if (stringVal.length() > MAX_STRING_LEN) {
+                  stringVal = stringVal.substring(0, MAX_STRING_LEN) + " ...";
+                }
                 if (stringVal.startsWith("java.lang.Object@")) {
                     stringVal = DEFAULT_VALUE;
                 }
             }
-            if (count == 0 ) {
+            if (count == 0) {
                 bookName = stringVal;
             } else if (count == 1) {
                 authorName = stringVal;
@@ -48,7 +51,7 @@ public class QueryResultsViewMapping {
             count++;
         }
 
-        }
+    }
 
     public String getBookName() {
         return bookName;

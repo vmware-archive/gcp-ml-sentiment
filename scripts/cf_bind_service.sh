@@ -3,11 +3,8 @@
 #app_name="gcp-next-demo"
 app_name="landmarks"
 
-#service="gcp-ml"
-#service="gcp-ml-cups"
-
 # This should be sufficient to enable ML and BigQuery, along with GCS (Storage)
-service="gcp-storage"
+service="storage-mike"
 
 # Additional configuration parameters: varies depending on which service
 # Ref. https://cloud.google.com/iam/docs/understanding-roles
