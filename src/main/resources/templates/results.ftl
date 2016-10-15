@@ -38,21 +38,19 @@
                 <img class="responsive-img" src="${imageUrl}">
             </div>
             <div class="col s6">
-                <p>
-                    <code>Vision API Processing Took: ${visionApiTiming} secs</code>
-                    <br>
-                    <code>BigQuery Processing Took: ${bigQueryApiTiming} secs</code>
-                    <br>
-                    <code>BigQuery Processed ${bigQueryBytesProcessed} bytes ${bigQueryIsCached}</code>
-                    <br>
-                    <code>Dataset: ${bigQueryDataSet}</code>
-                </p>
+                <div class='map' id='my-google-map'></div>
             </div>
         </div>
     </div>
 
     <div class="divider"></div>
 
+    <div class="section">
+        <code>Vision API: ${visionApiTiming} secs</code>
+        <br>
+        <code>BigQuery: ${bigQueryApiTiming} secs, Bytes Processed: ${bigQueryBytesProcessed} ${bigQueryIsCached},
+            Dataset: ${bigQueryDataSet}</code>
+    </div>
 
     <div class="section">
     <#if queryResults?has_content>
@@ -75,16 +73,12 @@
             </tbody>
         </table>
     <#else>
-    <h3>Sorry, but no books were found for this landmark.</h3>
+        <h3>Sorry, but no books were found for this landmark.</h3>
     </#if>
     </div>
 
-
     <div class="divider"></div>
 
-    <div class="section">
-        <div class='map' id='my-google-map'></div>
-    </div>
 </div>
 </body>
 <script>
@@ -101,7 +95,16 @@
             center: new google.maps.LatLng(latitude, longitude),
             mapElementClass: 'labs-map',
             mapElementId: 'my-google-map',
-            zoom: 18
+            zoom: 16
+        };
+
+        var createMarker = function (place, status) {
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                new google.maps.Marker({
+                    map: map,
+                    position: place.geometry.location
+                });
+            }
         };
 
         var initialize = function () {
@@ -117,15 +120,6 @@
 
             var service = new google.maps.places.PlacesService(map);
             service.getDetails(request, createMarker);
-        };
-
-        var createMarker = function (place, status) {
-            if (status == google.maps.places.PlacesServiceStatus.OK) {
-                new google.maps.Marker({
-                    map: map,
-                    position: place.geometry.location
-                });
-            }
         };
 
         self.initialize = initialize;
