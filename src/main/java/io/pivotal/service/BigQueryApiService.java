@@ -4,24 +4,14 @@ import com.google.api.services.bigquery.model.TableRow;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
+
 import com.google.api.services.bigquery.Bigquery;
-import com.google.api.services.bigquery.BigqueryScopes;
 import com.google.api.services.bigquery.model.GetQueryResultsResponse;
 import com.google.api.services.bigquery.model.QueryRequest;
 import com.google.api.services.bigquery.model.QueryResponse;
-import com.google.api.services.bigquery.model.TableCell;
-import com.google.api.services.bigquery.model.TableRow;
 import io.pivotal.CredentialManager;
-import io.pivotal.Domain.LandmarkNameWithScore;
+import io.pivotal.domain.LandmarkNameWithScore;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Scanner;
 /**
  * Created by mross on 10/7/16.
  */

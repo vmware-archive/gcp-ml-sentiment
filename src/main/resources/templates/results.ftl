@@ -54,6 +54,7 @@
 
     <div class="section">
     <#if queryResults?has_content>
+        <div class="divider"></div>
         <table class="bordered highlight" style="display: block; overflow-y: auto; height:450px">
             <thead>
             <tr>
@@ -72,6 +73,7 @@
                 </#list>
             </tbody>
         </table>
+        </div>
     <#else>
         <h3>Sorry, but no books were found for this landmark.</h3>
     </#if>

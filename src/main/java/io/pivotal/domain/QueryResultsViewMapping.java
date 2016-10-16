@@ -1,10 +1,7 @@
-package io.pivotal.Domain;
+package io.pivotal.domain;
 
 import com.google.api.services.bigquery.model.TableCell;
 import com.google.api.services.bigquery.model.TableRow;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by mross on 10/7/16.

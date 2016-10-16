@@ -1,4 +1,4 @@
-package io.pivotal.Domain;
+package io.pivotal.domain;
 
 /**
  * Created by mgoddard on 10/12/16.

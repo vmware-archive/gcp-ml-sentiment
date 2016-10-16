@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,9 +22,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.google.api.services.bigquery.model.TableRow;
 import com.google.api.services.vision.v1.model.EntityAnnotation;
 
-import io.pivotal.Domain.LabelResultsViewMapping;
-import io.pivotal.Domain.LandmarkNameWithScore;
-import io.pivotal.Domain.QueryResultsViewMapping;
+import io.pivotal.domain.LabelResultsViewMapping;
+import io.pivotal.domain.LandmarkNameWithScore;
+import io.pivotal.domain.QueryResultsViewMapping;
 import io.pivotal.service.BigQueryApiService;
 import io.pivotal.service.StorageApiService;
 import io.pivotal.service.VisionApiService;
@@ -38,16 +39,20 @@ public class WebController {
     @Value("${gcp-storage-bucket}")
     private String bucketName;
 
-    private StorageApiService storage = new StorageApiService();
+    @Autowired
+    private StorageApiService storage;
 
     private Map<String, String> imageIdToName;
 
+    public WebController() {
+    }
+
     @RequestMapping("/")
     public String renderIndex(Model model) {
-	imageIdToName = storage.getUploadedImages(bucketName);
-	Map<String, String> imageUrlToId = imageIdToName.entrySet().stream().collect(
-		Collectors.toMap(s -> StorageApiService.getPublicUrl(bucketName, s.getValue()), s -> s.getKey()));
-	model.addAttribute("images", imageUrlToId);
+        imageIdToName = storage.getUploadedImages(bucketName);
+        Map<String, String> imageUrlToId = imageIdToName.entrySet().stream().collect(
+                Collectors.toMap(s -> storage.getThumbnailUrl(bucketName, s.getValue()), s -> s.getKey()));
+        model.addAttribute("images", imageUrlToId);
         return "index";
     }
 
@@ -64,7 +69,7 @@ public class WebController {
     @RequestMapping(value = "/result/{imageId}")
     public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
 	String imageName = imageIdToName.get(imageId);
-	String publicUrl = StorageApiService.getPublicUrl(bucketName, imageName);
+	String publicUrl = storage.getPublicUrl(bucketName, imageName);
 	redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
 
 	String gcsUrl = String.format("gs://%s/%s", bucketName, imageName);
@@ -85,7 +90,7 @@ public class WebController {
 
             if (storage.upload(file, bucketName)) {
 		redirectAttributes.addFlashAttribute("imageUrl",
-			StorageApiService.getPublicUrl(bucketName, file.getOriginalFilename()));
+			storage.getPublicUrl(bucketName, file.getOriginalFilename()));
             } else {
                 // TODO(dana): Add a better error message
                 redirectAttributes.addFlashAttribute("alert", "File upload failed");

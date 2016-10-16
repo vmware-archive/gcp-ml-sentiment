@@ -1,12 +1,19 @@
 package io.pivotal.service;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.api.client.http.InputStreamContent;
@@ -15,9 +22,17 @@ import com.google.api.services.storage.model.StorageObject;
 
 import io.pivotal.CredentialManager;
 
+@Component
 public class StorageApiService {
 
     private static final CredentialManager CREDENTIAL_MANAGER = new CredentialManager();
+    private static final int THUMBNAIL_SIZE = 256; // Size in pixels of square box image will be sized to fit
+
+    @Value("${image-resizing-service-url:NOT_SET}")
+    private String imageResizingServiceUrl;
+
+    public StorageApiService() {
+    }
 
     public boolean upload(MultipartFile file, String bucket) {
         String name = file.getOriginalFilename();
@@ -51,7 +66,22 @@ public class StorageApiService {
         }
     }
 
-    public static String getPublicUrl(String bucket, String object) {
+    public String getThumbnailUrl (String bucket, String object) {
+        // http://image-resizing-service.apps.pcf-on-gcp.com/?size=1200&urlBase64=aHR0cDovL3N...X0Jlbi5qcGc=
+        String url = getPublicUrl(bucket, object);
+        if (imageResizingServiceUrl != null && !"NOT_SET".equals(imageResizingServiceUrl)) {
+            System.out.println("Using image resize service.  URL: " + imageResizingServiceUrl);
+            try {
+                String urlBase64 = new String(Base64.getEncoder().encode(url.getBytes("UTF-8")), "UTF-8");
+                url = String.format("%s/?size=%d&urlBase64=%s", imageResizingServiceUrl, THUMBNAIL_SIZE, urlBase64);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return url;
+    }
+
+    public String getPublicUrl(String bucket, String object) {
         return String.format("http://storage.googleapis.com/%s/%s", bucket, object);
     }
 }
