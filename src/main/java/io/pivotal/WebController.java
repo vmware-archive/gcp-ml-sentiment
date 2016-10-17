@@ -1,5 +1,6 @@
 package io.pivotal;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.pivotal.domain.MultipartFileWrapper;
+import io.pivotal.service.ImageResizingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -42,6 +45,9 @@ public class WebController {
     @Autowired
     private StorageApiService storage;
 
+    @Autowired
+    private ImageResizingService imageSizer;
+
     private Map<String, String> imageIdToName;
 
     public WebController() {
@@ -68,12 +74,13 @@ public class WebController {
 
     @RequestMapping(value = "/result/{imageId}")
     public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
-	String imageName = imageIdToName.get(imageId);
-	String publicUrl = storage.getPublicUrl(bucketName, imageName);
-	redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
+        String imageName = imageIdToName.get(imageId);
+        //String publicUrl = storage.getPublicUrl(bucketName, imageName);
+        String publicUrl = storage.getVisionUrl(bucketName, imageName);
+        redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
 
-	String gcsUrl = String.format("gs://%s/%s", bucketName, imageName);
-	VisionApiService vps = new VisionApiService();
+        String gcsUrl = String.format("gs://%s/%s", bucketName, imageName);
+        VisionApiService vps = new VisionApiService();
         StopWatch visionApiStopwatch = new StopWatch();
         visionApiStopwatch.start();
 
@@ -86,11 +93,23 @@ public class WebController {
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes) {
 
-        if (file.getSize() < 4000000 ) {
+        MultipartFileWrapper fileResized = new MultipartFileWrapper(file);
+        if (imageSizer.isEnabled()) {
+            System.out.println("Image resizer is enabled");
+            try {
+                byte[] b = imageSizer.resizeForVisionApi(file.getBytes());
+                fileResized.setBytes(b);
+                System.out.println("File resized successfully");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-            if (storage.upload(file, bucketName)) {
-		redirectAttributes.addFlashAttribute("imageUrl",
-			storage.getPublicUrl(bucketName, file.getOriginalFilename()));
+        if (fileResized.getSize() < 4000000) {
+
+            if (storage.upload(fileResized, bucketName)) {
+                redirectAttributes.addFlashAttribute("imageUrl",
+                        storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
             } else {
                 // TODO(dana): Add a better error message
                 redirectAttributes.addFlashAttribute("alert", "File upload failed");
@@ -102,10 +121,10 @@ public class WebController {
                 StopWatch visionApiStopwatch = new StopWatch();
                 visionApiStopwatch.start();
 
-                List<EntityAnnotation> visionApiResults = vps.identifyLandmark(file.getBytes(), 10);
+                List<EntityAnnotation> visionApiResults = vps.identifyLandmark(fileResized.getBytes(), 10);
                 visionApiStopwatch.stop();
                 return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
-            } catch(Exception e){
+            } catch (Exception e) {
                 System.out.println(e.getMessage());
                 redirectAttributes.addFlashAttribute("alert",
                         "There was a problem processing your file, please try another image");
@@ -116,9 +135,9 @@ public class WebController {
         }
         return "redirect:/";
     }
-  
+
     private String displayResult(List<EntityAnnotation> visionApiResults, StopWatch visionApiStopwatch,
-	    RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes) {
         // Need to see what type of results we have here: landmark, or label detection
         // This will depend on the size of visionApiResults: (1) -> landmark; (2) -> label (multiple)
 
@@ -148,8 +167,8 @@ public class WebController {
             EntityAnnotation landmarkResult = visionApiResults.get(0);
             //String landmarkName = landmarkResult.getDescription();
             System.out.println("Landmark name: \"" + landmarkName + "\"");
-            redirectAttributes.addFlashAttribute("latitude",landmarkResult.getLocations().get(0).getLatLng().getLatitude());
-            redirectAttributes.addFlashAttribute("longitude",landmarkResult.getLocations().get(0).getLatLng().getLongitude());
+            redirectAttributes.addFlashAttribute("latitude", landmarkResult.getLocations().get(0).getLatLng().getLatitude());
+            redirectAttributes.addFlashAttribute("longitude", landmarkResult.getLocations().get(0).getLatLng().getLongitude());
             redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
             //redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
 
@@ -188,7 +207,7 @@ public class WebController {
         return "redirect:/";
     }
 
-    private ArrayList<QueryResultsViewMapping> mapResultSetToList(List<TableRow> results){
+    private ArrayList<QueryResultsViewMapping> mapResultSetToList(List<TableRow> results) {
         QueryResultsViewMapping viewMapping;
         ArrayList<QueryResultsViewMapping> queryResults = new ArrayList<>();
 
@@ -200,7 +219,6 @@ public class WebController {
 
         return queryResults;
     }
-
 
 
 }

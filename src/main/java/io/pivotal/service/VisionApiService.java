@@ -33,21 +33,16 @@ public class VisionApiService {
         for (EntityAnnotation annotation : responseResults) {
             System.out.printf("\t%s\n", annotation.getDescription());
         }
-
-
         return responseResults;
     }
 
     // This is used only in the tests
     public List<EntityAnnotation> requestPhotoLabelInfo(byte [] rawImage) throws IOException, GeneralSecurityException {
-
-
         List<EntityAnnotation> responseResults  = labelImage(rawImage, 10);
         for (EntityAnnotation annotation : responseResults) {
             System.out.println("Description: \"" + annotation.getDescription() + "\", Confidence: " + annotation.getConfidence()
             + ", " + annotation.getScore());
         }
-
         return responseResults;
     }
 
@@ -63,10 +58,7 @@ public class VisionApiService {
 
     private List<EntityAnnotation> identifyLandmark(Image image, int maxResults) {
         List<EntityAnnotation> visionApiResults = null;
-
         try {
-
-
             CredentialManager credentialManager = new CredentialManager();
             Vision vision = credentialManager.getVisionService();
             AnnotateImageRequest request =
@@ -94,7 +86,6 @@ public class VisionApiService {
             for (EntityAnnotation annotation : visionApiResults) {
                 System.out.println("Description: \"" + annotation.getDescription() + "\", Score: " + getScoreAsPercent(annotation));
             }
-
         } catch (Exception e) {
                 System.out.println(e);
         }
@@ -139,5 +130,4 @@ public class VisionApiService {
         return response.getLabelAnnotations();
         // [END parse_response]
     }
-
 }
