@@ -52,34 +52,34 @@
             Dataset: ${bigQueryDataSet}</code>
     </div>
 
-    <div class="section">
-    <#if queryResults?has_content>
-        <div class="divider"></div>
-        <table class="bordered highlight" style="display: block; overflow-y: auto; height:450px">
-            <thead>
-            <tr>
-                <th width="40%">Book Title</th>
-                <th width="20%">Author Name</th>
-                <th width="40%">Relevant Tags</th>
-            </tr>
-            </thead>
-            <tbody>
-                <#list queryResults as user>
-                <tr>
-                    <td width="40%">${user.bookName}</td>
-                    <td width="20%">${user.authorName}</td>
-                    <td width="40%">${user.bookLocation}</td>
-                </tr>
-                </#list>
-            </tbody>
-        </table>
-        </div>
-    <#else>
-        <h3>Sorry, but no books were found for this landmark.</h3>
-    </#if>
-    </div>
-
+<div class="section">
+<#if queryResults?has_content>
     <div class="divider"></div>
+    <table class="bordered highlight" style="display: block; overflow-y: auto; height:450px">
+        <thead>
+        <tr>
+            <th width="40%">Book Title</th>
+            <th width="20%">Author Name</th>
+            <th width="40%">Relevant Tags</th>
+        </tr>
+        </thead>
+        <tbody>
+            <#list queryResults as user>
+            <tr>
+                <td width="40%">${user.bookName}</td>
+                <td width="20%">${user.authorName}</td>
+                <td width="40%">${user.bookLocation}</td>
+            </tr>
+            </#list>
+        </tbody>
+    </table>
+</div>
+<#else>
+    <h3>Sorry, but no books were found for this landmark.</h3>
+</#if>
+</div>
+
+<div class="divider"></div>
 
 </div>
 </body>

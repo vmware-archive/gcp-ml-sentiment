@@ -94,6 +94,14 @@ public class WebController {
                                    RedirectAttributes redirectAttributes) {
 
         MultipartFileWrapper fileResized = new MultipartFileWrapper(file);
+
+        if (!fileResized.mimeTypeSupported()) {
+            String msg = "Your file of type " + fileResized.getContentType() +
+                    " is not supported. Please try again with a different file type.";
+            redirectAttributes.addFlashAttribute("alert", msg);
+            return "redirect:/";
+        }
+
         if (imageSizer.isEnabled()) {
             System.out.println("Image resizer is enabled");
             try {
@@ -102,36 +110,38 @@ public class WebController {
                 System.out.println("File resized successfully");
             } catch (IOException e) {
                 e.printStackTrace();
+                redirectAttributes.addFlashAttribute(
+                        "alert", "There was a problem processing your image. Please try again with a different image");
+                return "redirect:/";
             }
         }
 
-        if (fileResized.getSize() < 4000000) {
+        if (fileResized.getSize() > 4 * 1024 * 1024) {
+            redirectAttributes.addFlashAttribute("alert", "The max file upload size is 4mb, please try a smaller image");
+            return "redirect:/";
+        }
 
-            if (storage.upload(fileResized, bucketName)) {
-                redirectAttributes.addFlashAttribute("imageUrl",
-                        storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
-            } else {
-                // TODO(dana): Add a better error message
-                redirectAttributes.addFlashAttribute("alert", "File upload failed");
-                return "redirect:/";
-            }
-
-            try {
-                VisionApiService vps = new VisionApiService();
-                StopWatch visionApiStopwatch = new StopWatch();
-                visionApiStopwatch.start();
-
-                List<EntityAnnotation> visionApiResults = vps.identifyLandmark(fileResized.getBytes(), 10);
-                visionApiStopwatch.stop();
-                return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                redirectAttributes.addFlashAttribute("alert",
-                        "There was a problem processing your file, please try another image");
-            }
+        if (storage.upload(fileResized, bucketName)) {
+            redirectAttributes.addFlashAttribute("imageUrl",
+                    storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
         } else {
+            // TODO(dana): Add a better error message
+            redirectAttributes.addFlashAttribute("alert", "File upload failed");
+            return "redirect:/";
+        }
+
+        try {
+            VisionApiService vps = new VisionApiService();
+            StopWatch visionApiStopwatch = new StopWatch();
+            visionApiStopwatch.start();
+
+            List<EntityAnnotation> visionApiResults = vps.identifyLandmark(fileResized.getBytes(), 10);
+            visionApiStopwatch.stop();
+            return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
             redirectAttributes.addFlashAttribute("alert",
-                    "The max file upload size is 4mb, please try a smaller image");
+                    "There was a problem processing your file, please try another image");
         }
         return "redirect:/";
     }
