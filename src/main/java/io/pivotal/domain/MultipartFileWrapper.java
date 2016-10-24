@@ -44,7 +44,11 @@ public class MultipartFileWrapper implements MultipartFile {
 
     @Override
     public long getSize() {
-        return bytes.length;
+        if (this.bytes != null) {
+            return bytes.length;
+        } else {
+            return multipartFile.getSize();
+        }
     }
 
     @Override
@@ -59,7 +63,11 @@ public class MultipartFileWrapper implements MultipartFile {
 
     @Override
     public InputStream getInputStream() throws IOException {
-        return new ByteArrayInputStream(bytes);
+        if (this.bytes != null) {
+            return new ByteArrayInputStream(bytes);
+        } else {
+            return multipartFile.getInputStream();
+        }
     }
 
     // The following methods just delegate to the wrapped instance
