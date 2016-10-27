@@ -61,7 +61,6 @@ public class StorageApiService {
 
     public Map<String, String> getUploadedImages(String bucket) {
         try {
-            // storage.objects().delete("mybucket", "myobject").execute();
             List<StorageObject> objects = CREDENTIAL_MANAGER.getStorageClient().objects().list(bucket).execute()
                     .getItems(); // It seems that a NPE is possible here, if there are no images
             Map<String, String> images = objects.stream().collect(
@@ -73,7 +72,23 @@ public class StorageApiService {
         }
     }
 
-    public String getResizedImageUrl (String bucket, String object, int size) {
+    public void deleteUploadedImages(String bucket) {
+        try {
+            // storage.objects().delete("mybucket", "myobject").execute();
+            List<StorageObject> objects = CREDENTIAL_MANAGER.getStorageClient().objects().list(bucket).execute()
+                    .getItems(); // It seems that a NPE is possible here, if there are no images
+            for (StorageObject object : objects) {
+                // getId() returns: gcp-storage-mike/the_image.jpg/1477418629210000
+                String fileName = object.getId().split("/")[1];
+                System.out.printf("Deleting %s from bucket %s\n", fileName, bucket);
+                CREDENTIAL_MANAGER.getStorageClient().objects().delete(bucket, fileName).execute();
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+    }
+
+    public String getResizedImageUrl(String bucket, String object, int size) {
         // http://image-resizing-service.apps.pcf-on-gcp.com/?size=1200&urlBase64=aHR0cDovL3N...X0Jlbi5qcGc=
         String url = getPublicUrl(bucket, object);
         if (imageResizingServiceUrl != null && !"NOT_SET".equals(imageResizingServiceUrl)) {
@@ -88,12 +103,12 @@ public class StorageApiService {
         return url;
     }
 
-    public String getThumbnailUrl (String bucket, String object) {
+    public String getThumbnailUrl(String bucket, String object) {
         return getResizedImageUrl(bucket, object, THUMBNAIL_SIZE);
     }
 
     // Assumption: Vision API will also accept a URL.  TODO: verify this.
-    public String getVisionUrl (String bucket, String object) {
+    public String getVisionUrl(String bucket, String object) {
         return getResizedImageUrl(bucket, object, VISION_SIZE);
     }
 

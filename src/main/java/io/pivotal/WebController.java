@@ -72,6 +72,13 @@ public class WebController {
         return "labels";
     }
 
+    @RequestMapping("/delete")
+    public String deleteThumbnails(Model model) {
+        System.out.println("Deleting image thumbnails");
+        storage.deleteUploadedImages(bucketName);
+        return "redirect:/";
+    }
+
     @RequestMapping(value = "/result/{imageId}")
     public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
         String imageName = imageIdToName.get(imageId);

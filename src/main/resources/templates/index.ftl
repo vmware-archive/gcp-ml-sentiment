@@ -60,6 +60,7 @@
                         <div class="file-path-wrapper">
                             <input class="file-path validate" type="text" placeholder="(Click to choose a file)">
                         </div>
+
                         <input class="btn" type="submit" value="Upload" id="submitButton">
 
                         <div id="formLoader" class="progress" style="float:left; display:none">
@@ -71,6 +72,9 @@
 
             <div class="col s6">
                 <h5>Try One of the sample images</h5>
+                <form method="GET" action="/delete">
+                    <input class="btn" type="submit" value="Delete Images" id="deleteButton">
+                </form>
             <#list images?keys as url>
                 <a href="/result/${images[url]}"><img src="${url}" class="thumbnail"></a>
             </#list>
@@ -87,7 +91,6 @@
     $("#submitButton").click(function () {
         $("#formLoader").show();
     });
-
 </script>
 
 </html>
