@@ -29,6 +29,7 @@
 		<div class="row">
 			<div class="col s6">
 				<img class="responsive-img" src="${imageUrl}" style="margin-top:15px">
+				<#include "/try_another.ftl" parse="false">
 			</div>
 			<div class="col s6">
 		        <table>

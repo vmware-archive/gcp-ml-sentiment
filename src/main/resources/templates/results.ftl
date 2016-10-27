@@ -36,6 +36,7 @@
         <div class="row">
             <div class="col s6">
                 <img class="responsive-img" src="${imageUrl}">
+            <#include "/try_another.ftl" parse="false">
             </div>
             <div class="col s6">
                 <div class='map' id='my-google-map'></div>
