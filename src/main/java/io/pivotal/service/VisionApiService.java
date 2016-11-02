@@ -36,16 +36,6 @@ public class VisionApiService {
         return responseResults;
     }
 
-    // This is used only in the tests
-    public List<EntityAnnotation> requestPhotoLabelInfo(byte [] rawImage) throws IOException, GeneralSecurityException {
-        List<EntityAnnotation> responseResults  = labelImage(rawImage, 10);
-        for (EntityAnnotation annotation : responseResults) {
-            System.out.println("Description: \"" + annotation.getDescription() + "\", Confidence: " + annotation.getConfidence()
-            + ", " + annotation.getScore());
-        }
-        return responseResults;
-    }
-
     public List<EntityAnnotation> identifyLandmark(String gcsUrl, int maxResults) {
         Image image = new Image().setSource(new ImageSource().setGcsImageUri(gcsUrl));
         return identifyLandmark(image, maxResults);
@@ -97,37 +87,4 @@ public class VisionApiService {
         return String.format("%d%%", (int) (100.0 * entityAnnotation.getScore()));
     }
 
-    public List<EntityAnnotation> labelImage(byte [] rawImage, int maxResults) throws IOException, GeneralSecurityException {
-        // [START construct_request]
-        CredentialManager credentialManager = new CredentialManager();
-
-        Vision vision = credentialManager.getVisionService();
-
-        AnnotateImageRequest request =
-                new AnnotateImageRequest()
-                        .setImage(new Image().encodeContent(rawImage))
-                        .setFeatures(ImmutableList.of(
-                                new Feature()
-                                        .setType("LANDMARK_DETECTION")
-                                        .setMaxResults(maxResults)));
-        Vision.Images.Annotate annotate =
-                vision.images()
-                        .annotate(new BatchAnnotateImagesRequest().setRequests(ImmutableList.of(request)));
-        // Due to a bug: requests to Vision API containing large images fail when GZipped.
-        annotate.setDisableGZipContent(true);
-        // [END construct_request]
-
-        // [START parse_response]
-        BatchAnnotateImagesResponse batchResponse = annotate.execute();
-        assert batchResponse.getResponses().size() == 1;
-        AnnotateImageResponse response = batchResponse.getResponses().get(0);
-        if (response.getLabelAnnotations() == null) {
-            throw new IOException(
-                    response.getError() != null
-                            ? response.getError().getMessage()
-                            : "Unknown error getting image annotations");
-        }
-        return response.getLabelAnnotations();
-        // [END parse_response]
-    }
 }

@@ -35,9 +35,6 @@ public class GCPApplicationTests {
         if (fileToPath.containsKey(fileName)) {
             rv = fileToPath.get(fileName);
         } else {
-            //ClassLoader classLoader = getClass().getClassLoader();
-            //File file = new File(classLoader.getResource(fileName).getFile()); // Better
-            //File file = new File(getClass().getResource(fileName).getFile()); // Worse
             String path = this.getClass().getClassLoader().getResource(fileName).getPath();
             if (path != null) {
                 System.out.println("Path: " + path);
@@ -63,13 +60,11 @@ public class GCPApplicationTests {
     @Test
     public void accessLandmarkApiTest() throws Exception {
         VisionApiService vps = new VisionApiService();
-        
+
         byte[] array = Files.readAllBytes(getPath("bridge.jpg"));
-        //assertFalse(vps.requestPhotoLabelInfo(array).isEmpty());
         assertFalse(vps.identifyLandmark(array, 10).isEmpty());
 
         array = Files.readAllBytes(getPath("taj.jpg"));
-        //assertFalse(vps.requestPhotoLabelInfo(array).isEmpty());
         assertFalse(vps.identifyLandmark(array, 10).isEmpty());
     }
 
@@ -88,11 +83,10 @@ public class GCPApplicationTests {
         }
     }
 
-    /*
     @Test
     public void testExecuteBigQueryQueryWithLandmarkName() throws IOException, GeneralSecurityException {
         VisionApiService vps = new VisionApiService();
-        byte[] array = Files.readAllBytes(getPath("taj.jpeg"));
+        byte[] array = Files.readAllBytes(getPath("taj.jpg"));
         List<EntityAnnotation> landmarkInfoArray = vps.requestLandmarkInfo(array);
         assertFalse(landmarkInfoArray.isEmpty());
         EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
@@ -122,5 +116,5 @@ public class GCPApplicationTests {
             }
             System.out.println();
         }
-    } */
+    }
 }
