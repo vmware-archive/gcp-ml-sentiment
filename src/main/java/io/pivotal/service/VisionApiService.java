@@ -2,20 +2,15 @@ package io.pivotal.service;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.api.services.vision.v1.Vision;
-import com.google.api.services.vision.v1.model.AnnotateImageRequest;
-import com.google.api.services.vision.v1.model.AnnotateImageResponse;
-import com.google.api.services.vision.v1.model.BatchAnnotateImagesRequest;
-import com.google.api.services.vision.v1.model.BatchAnnotateImagesResponse;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
-import com.google.api.services.vision.v1.model.Feature;
-import com.google.api.services.vision.v1.model.Image;
-import com.google.api.services.vision.v1.model.ImageSource;
+import com.google.api.services.vision.v1.model.*;
 import com.google.common.collect.ImmutableList;
 
 import io.pivotal.CredentialManager;
+import io.pivotal.LandmarkQualifier;
 
 
 /**
@@ -56,7 +51,8 @@ public class VisionApiService {
                             .setImage(image)
                             .setFeatures(ImmutableList.of(
                                     new Feature().setType("LANDMARK_DETECTION").setMaxResults(maxResults),
-                                    new Feature().setType("LABEL_DETECTION").setMaxResults(maxResults)
+                                    new Feature().setType("LABEL_DETECTION").setMaxResults(maxResults),
+                                    new Feature().setType("SAFE_SEARCH_DETECTION").setMaxResults(maxResults)
                             ));
             Vision.Images.Annotate annotate =
                     vision.images()
@@ -72,9 +68,43 @@ public class VisionApiService {
             // No landmark detected?  Fall back to label detection.
             if (visionApiResults == null) {
                 visionApiResults = response.getLabelAnnotations();
+
+                /*
+                 * Add Safe Search 12 December 2016.
+                 * If there is objectionable content uploaded, need to:
+                 * 1. Provide a message about what a landmark is
+                 * 2. Prevent us from storing that image (or, remove it)
+                 * 3. Prevent the display of this image.
+                 */
+
+                // Here, just look at the probability the image is of a landmark at all.
+                List<String> descriptionList = new ArrayList<String>();
+                for (EntityAnnotation annotation : visionApiResults) {
+                    descriptionList.add(annotation.getDescription());
+                }
+                double landmarkFraction = LandmarkQualifier.getWordFraction(descriptionList);
+                boolean isPossibleLandmark = LandmarkQualifier.isPossibleLandmark(descriptionList);
+                System.out.printf("Probability this is a landmark: %.3f\n", landmarkFraction);
+                System.out.printf("Is this possibly a landmark? %s\n", isPossibleLandmark ? "Yes" : "No");
+                if (!isPossibleLandmark) {
+                    visionApiResults = null;
+                }
+                // Now, see if the image triggers the adult filters.
+                SafeSearchAnnotation safeSearchAnnotation = response.getSafeSearchAnnotation();
+                String adultLikelihood = safeSearchAnnotation.getAdult();
+                if (adultLikelihood != null) {
+                    System.out.println("Adult likelihood: " + adultLikelihood);
+                    if ("POSSIBLE".equals(adultLikelihood) || "LIKELY".equals(adultLikelihood)
+                            || "VERY_LIKELY".equals(adultLikelihood)) {
+                        visionApiResults = null;
+                    }
+                }
             }
-            for (EntityAnnotation annotation : visionApiResults) {
-                System.out.println("Description: \"" + annotation.getDescription() + "\", Score: " + getScoreAsPercent(annotation));
+
+            if (visionApiResults != null) {
+                for (EntityAnnotation annotation : visionApiResults) {
+                    System.out.println("Description: \"" + annotation.getDescription() + "\", Score: " + getScoreAsPercent(annotation));
+                }
             }
         } catch (Exception e) {
                 System.out.println(e);

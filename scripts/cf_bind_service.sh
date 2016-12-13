@@ -1,7 +1,6 @@
 #!/bin/bash
 
-#app_name="gcp-next-demo"
-app_name="landmarks"
+app_name="landmark"
 
 # This should be sufficient to enable ML and BigQuery, along with GCS (Storage)
 service="storage-mike"

@@ -128,6 +128,7 @@ public class WebController {
             return "redirect:/";
         }
 
+        /*
         if (storage.upload(fileResized, bucketName)) {
             redirectAttributes.addFlashAttribute("imageUrl",
                     storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
@@ -136,6 +137,7 @@ public class WebController {
             redirectAttributes.addFlashAttribute("alert", "File upload failed");
             return "redirect:/";
         }
+        */
 
         try {
             VisionApiService vps = new VisionApiService();
@@ -144,7 +146,20 @@ public class WebController {
 
             List<EntityAnnotation> visionApiResults = vps.identifyLandmark(fileResized.getBytes(), 10);
             visionApiStopwatch.stop();
-            return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
+            if (visionApiResults != null) {
+                if (storage.upload(fileResized, bucketName)) {
+                    redirectAttributes.addFlashAttribute("imageUrl",
+                            storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
+                } else {
+                    // TODO(dana): Add a better error message
+                    redirectAttributes.addFlashAttribute("alert", "File upload failed");
+                    return "redirect:/";
+                }
+                return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
+            } else {
+                redirectAttributes.addFlashAttribute("alert",
+                        "Your image does not appear to be a landmark.  Please try a different image.");
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
             redirectAttributes.addFlashAttribute("alert",
