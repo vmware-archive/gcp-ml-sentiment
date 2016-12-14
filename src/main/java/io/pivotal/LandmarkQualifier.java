@@ -10,7 +10,7 @@ import java.util.Set;
  */
 public class LandmarkQualifier {
 
-    private static final double MIN_WORD_FRACTION = 0.25;
+    private static final double MIN_WORD_FRACTION = 0.30;
 
     private static final String[] WORD_LIST = {
             "according", "achieved", "achievement", "across", "action", "added", "addition",
