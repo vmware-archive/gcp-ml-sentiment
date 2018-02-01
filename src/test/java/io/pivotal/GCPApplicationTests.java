@@ -70,9 +70,9 @@ public class GCPApplicationTests {
 
     @Test
     public void testExecuteBigQueryQuery() throws IOException {
-        BigQueryApiService bqs = new BigQueryApiService("Taj Mahal");
+        BigQueryApiService bqs = new BigQueryApiService();
 
-        List<TableRow> results = bqs.executeQuery();
+        List<TableRow> results = bqs.executeQuery("Taj Mahal");
         System.out.println("Iterating over returned results");
         System.out.println(results.size());
         for (TableRow row : results) {
@@ -92,8 +92,8 @@ public class GCPApplicationTests {
         EntityAnnotation landmarkResult = landmarkInfoArray.get(0);
         String landmarkName = landmarkResult.getDescription();
         System.out.println(landmarkName.trim());
-        BigQueryApiService bqs = new BigQueryApiService(landmarkName);
-        java.util.List<TableRow> results = bqs.executeQuery();
+        BigQueryApiService bqs = new BigQueryApiService();
+        java.util.List<TableRow> results = bqs.executeQuery(landmarkName);
         assertNotEquals(0, results.size());
         for (TableRow row : results) {
             for (TableCell field : row.getF()) {
@@ -107,8 +107,8 @@ public class GCPApplicationTests {
         landmarkResult = landmarkInfoArray.get(0);
         landmarkName = landmarkResult.getDescription();
         System.out.println(landmarkName.trim());
-        bqs = new BigQueryApiService(landmarkName);
-        results = bqs.executeQuery();
+        bqs = new BigQueryApiService();
+        results = bqs.executeQuery(landmarkName);
         assertNotEquals(0, results.size());
         for (TableRow row : results) {
             for (TableCell field : row.getF()) {

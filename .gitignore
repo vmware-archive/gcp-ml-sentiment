@@ -24,3 +24,5 @@ nbdist/
 
 ### Vim ###
 .*.swp
+
+.DS_Store
