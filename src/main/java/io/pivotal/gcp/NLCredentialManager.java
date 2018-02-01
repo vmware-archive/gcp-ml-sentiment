@@ -1,11 +1,26 @@
 package io.pivotal.gcp;
 
 import com.google.api.services.language.v1.CloudNaturalLanguage;
+import com.google.api.services.language.v1.CloudNaturalLanguageScopes;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+@Component
+public class NLCredentialManager extends AbstractCredentialManager<CloudNaturalLanguage> {
 
-public interface NLCredentialManager extends CredentialManager {
+    @Override
+    public CloudNaturalLanguage getClient() {
+        return new CloudNaturalLanguage
+                .Builder(getTransport(), getJsonFactory(), getCredential(CloudNaturalLanguageScopes.all()))
+                .setApplicationName(APP_NAME).build();
+    }
 
-    CloudNaturalLanguage getClient() throws IOException;
+    @Override
+    protected void extractSpecializedInfos(JSONObject cred) {
+    }
 
+    @Override
+    public String getVCapKey() {
+        return "google-ml-apis";
+    }
 }

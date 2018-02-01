@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,51 +65,32 @@ public class BigQueryApiService {
         String landMarkNames = scoreList.stream()
                 .map(LandmarkNameWithScore::getName)
                 .collect(Collectors.joining("|", "(", ")"));
-//        if (scoreList.size() > 1) {
-//            for (LandmarkNameWithScore lws : scoreList) {
-//                if (landMarkNames.length() > 0) {
-//                    landMarkNames += '|'; // Building an OR for the regular expression
-//                }
-//                landMarkNames += lws.getName();
-//            }
-//            landMarkNames = '(' + landMarkNames + ')';
-//        } else {
-//            landMarkNames = scoreList.get(0).getName();
-//        }
         return executeQuery(landMarkNames);
     }
 
     public List<TableRow> executeQuery(String landmarkName) {
-        List<TableRow> rows = new ArrayList<TableRow>();
-
         try {
             Bigquery bigquery = credentialManager.getClient();
             String projectId = credentialManager.getProjectId();
 
-            rows =
-                    executeQuery(
+            List<TableRow> rows = executeQuery(
                             getQuery(landmarkName),
                             bigquery,
                             projectId);
-
             logger.info("Successfully executed a query");
+            return rows;
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
 
-        return rows;
-    }
-
-    public boolean isCached() {
-        return isCached;
+        return Collections.emptyList();
     }
 
     private List<TableRow> executeQuery(String querySql, Bigquery bigquery, String projectId) {
         List<TableRow> rows = new ArrayList<TableRow>();
 
         try {
-            QueryResponse query =
-                    bigquery.jobs().query(projectId, new QueryRequest().setQuery(querySql)).execute();
+            QueryResponse query = bigquery.jobs().query(projectId, new QueryRequest().setQuery(querySql)).execute();
 
             // Execute it
             GetQueryResultsResponse queryResult =
@@ -127,6 +109,10 @@ public class BigQueryApiService {
             logger.error(e.getMessage(), e);
             return rows;
         }
+    }
+
+    public boolean isCached() {
+        return isCached;
     }
 
 }

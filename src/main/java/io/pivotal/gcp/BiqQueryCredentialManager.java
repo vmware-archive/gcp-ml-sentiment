@@ -1,12 +1,26 @@
 package io.pivotal.gcp;
 
 import com.google.api.services.bigquery.Bigquery;
-import com.google.api.services.storage.Storage;
+import com.google.api.services.bigquery.BigqueryScopes;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+@Component
+public class BiqQueryCredentialManager extends AbstractCredentialManager<Bigquery> {
 
-public interface BiqQueryCredentialManager extends CredentialManager {
+    @Override
+    public Bigquery getClient() {
+        return new Bigquery.Builder(getTransport(), getJsonFactory(), getCredential(BigqueryScopes.all()))
+                .setApplicationName("Bigquery Samples")
+                .build();
+    }
 
-    Bigquery getClient() throws IOException;
+    @Override
+    protected void extractSpecializedInfos(JSONObject cred) {
+    }
 
+    @Override
+    public String getVCapKey() {
+        return "google-bigquery";
+    }
 }

@@ -1,6 +1,7 @@
 package io.pivotal.service;
 
 import com.google.api.client.http.InputStreamContent;
+import com.google.api.services.storage.Storage;
 import com.google.api.services.storage.model.ObjectAccessControl;
 import com.google.api.services.storage.model.StorageObject;
 import io.pivotal.gcp.StorageCredentialManager;
@@ -21,7 +22,6 @@ public class StorageApiService {
 
     private final static Logger logger = LoggerFactory.getLogger(StorageApiService.class);
 
-    //    private static final CredentialManager CREDENTIAL_MANAGER = new CredentialManager();
     private static final int THUMBNAIL_SIZE = 256; // Size in pixels of square box image will be sized to fit
     private static final int VISION_SIZE = 800; // Optimal size for the Vision API
 
@@ -52,35 +52,41 @@ public class StorageApiService {
     }
 
     public Map<String, String> getUploadedImages() {
+        return listObjects()
+                .stream()
+                .collect(Collectors.toMap(s -> s.getId().substring(s.getId().lastIndexOf("/") + 1), StorageObject::getName));
+    }
+
+    public void deleteUploadedImages() {
+        String bucket = credentialManager.getBucketName();
+        Storage client = credentialManager.getClient();
+
+        listObjects().stream()
+                .map(o -> o.getId().split("/")[1])
+                .forEach(filename -> {
+                    logger.info("Deleting %s from bucket %s\n", filename, bucket);
+                    try {
+                        client.objects().delete(bucket, filename).execute();
+                    } catch (IOException e) {
+                        logger.error(e.getMessage(), e);
+                    }
+                });
+    }
+
+    private List<StorageObject> listObjects() {
         try {
-            return Optional.ofNullable(credentialManager.getClient().objects().list(credentialManager.getBucketName())
+            Storage client = credentialManager.getClient();
+            String bucketName = credentialManager.getBucketName();
+            return Optional.ofNullable(client.objects()
+                    .list(bucketName)
                     .execute()
-                    .getItems()).orElseThrow(EmptyStackException::new)
-                    .stream()
-                    .collect(Collectors.toMap(s -> s.getId().substring(s.getId().lastIndexOf("/") + 1), StorageObject::getName));
+                    .getItems()).orElseThrow(EmptyStackException::new);
         } catch (EmptyStackException e) {
             logger.warn("Empty bucket");
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return new HashMap<>();
-    }
-
-    public void deleteUploadedImages() {
-        try {
-            // storage.objects().delete("mybucket", "myobject").execute();
-            String bucket = credentialManager.getBucketName();
-            List<StorageObject> objects = credentialManager.getClient().objects().list(bucket).execute()
-                    .getItems(); // It seems that a NPE is possible here, if there are no images
-            for (StorageObject object : objects) {
-                // getId() returns: gcp-storage-mike/the_image.jpg/1477418629210000
-                String fileName = object.getId().split("/")[1];
-                System.out.printf("Deleting %s from bucket %s\n", fileName, bucket);
-                credentialManager.getClient().objects().delete(bucket, fileName).execute();
-            }
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-        }
+        return Collections.emptyList();
     }
 
     public String getResizedImageUrl(String object, int size) {

@@ -1,12 +1,32 @@
 package io.pivotal.gcp;
 
 import com.google.api.services.storage.Storage;
+import com.google.api.services.storage.StorageScopes;
+import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+@Component
+public class StorageCredentialManager extends AbstractCredentialManager<Storage> {
 
-public interface StorageCredentialManager extends CredentialManager {
+    private String bucketName;
 
-    Storage getClient() throws IOException;
+    @Override
+    public Storage getClient() {
+        return new Storage.Builder(getTransport(), getJsonFactory(), getCredential(StorageScopes.all()))
+                .setApplicationName(APP_NAME).build();
+    }
 
-    String getBucketName();
+    @Override
+    protected final void extractSpecializedInfos(JSONObject cred) {
+        bucketName = cred.getString("bucket_name");
+    }
+
+    @Override
+    public String getVCapKey() {
+        return "google-storage";
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
 }

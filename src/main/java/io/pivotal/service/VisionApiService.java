@@ -34,7 +34,7 @@ public class VisionApiService {
     public List<EntityAnnotation> requestLandmarkInfo(byte[] rawImage) throws IOException, GeneralSecurityException {
         List<EntityAnnotation> responseResults = identifyLandmark(rawImage, 10);
         for (EntityAnnotation annotation : responseResults) {
-            System.out.printf("\t%s\n", annotation.getDescription());
+            logger.info("\t%s\n", annotation.getDescription());
         }
         return responseResults;
     }
@@ -92,8 +92,8 @@ public class VisionApiService {
                 }
                 double landmarkFraction = LandmarkQualifier.getWordFraction(descriptionList);
                 boolean isPossibleLandmark = LandmarkQualifier.isPossibleLandmark(descriptionList);
-                System.out.printf("Probability this is a landmark: %.3f\n", landmarkFraction);
-                System.out.printf("Is this possibly a landmark? %s\n", isPossibleLandmark ? "Yes" : "No");
+                logger.info("Probability this is a landmark: %.3f\n", landmarkFraction);
+                logger.info("Is this possibly a landmark? %s\n", isPossibleLandmark ? "Yes" : "No");
                 if (!isPossibleLandmark) {
                     visionApiResults = null;
                 }

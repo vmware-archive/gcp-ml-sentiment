@@ -1,6 +1,7 @@
 package io.pivotal.gcp;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.services.AbstractGoogleClient;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
@@ -16,12 +17,7 @@ import java.io.InputStream;
 import java.util.Base64;
 import java.util.Set;
 
-/*
- * Google API: https://developers.google.com/api-client-library/java/
- * SCDF: http://engineering.pivotal.io/post/spring-cloud-data-flow-sink/
- */
-
-public abstract class AbstractCredentialManager implements CredentialManager {
+public abstract class AbstractCredentialManager<T extends AbstractGoogleClient> implements CredentialManager<T> {
 
     private final static Logger logger = LoggerFactory.getLogger(AbstractCredentialManager.class);
     private final String privateKeyData;
@@ -43,7 +39,7 @@ public abstract class AbstractCredentialManager implements CredentialManager {
 
     public abstract String getVCapKey();
 
-    public String getPrivateKeyData() {
+    private String getPrivateKeyData() {
         return this.privateKeyData;
     }
 
@@ -51,21 +47,26 @@ public abstract class AbstractCredentialManager implements CredentialManager {
         return this.projectId;
     }
 
-    protected final JsonFactory getJsonFactory() {
+    final JsonFactory getJsonFactory() {
         return new JacksonFactory();
     }
 
-    protected final HttpTransport getTransport() {
+    final HttpTransport getTransport() {
         return new NetHttpTransport();
     }
 
-    protected final GoogleCredential getCredential(Set<String> all) throws IOException {
-        InputStream stream = new ByteArrayInputStream(Base64.getDecoder().decode(getPrivateKeyData()));
-        GoogleCredential cred = GoogleCredential.fromStream(stream);
-        if (cred.createScopedRequired()) {
-            cred = cred.createScoped(all);
+    final GoogleCredential getCredential(Set<String> all) {
+        byte[] buf = Base64.getDecoder().decode(getPrivateKeyData());
+        try (InputStream stream = new ByteArrayInputStream(buf)) {
+            GoogleCredential cred = GoogleCredential.fromStream(stream);
+            if (cred.createScopedRequired()) {
+                cred = cred.createScoped(all);
+            }
+            return cred;
+        } catch (IOException e) {
+            logger.error("Unable to read credentials", e);
+            throw new RuntimeException(e);
         }
-        return cred;
     }
 
 }

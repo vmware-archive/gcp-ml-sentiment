@@ -189,7 +189,6 @@ public class WebController {
             redirectAttributes.addFlashAttribute("latitude", landmarkResult.getLocations().get(0).getLatLng().getLatitude());
             redirectAttributes.addFlashAttribute("longitude", landmarkResult.getLocations().get(0).getLatLng().getLongitude());
             redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
-            //redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
 
             StopWatch biqQueryStopwatch = new StopWatch();
             biqQueryStopwatch.start();
