@@ -36,15 +36,15 @@ public class ImageResizingService {
 
     private final static Logger logger = LoggerFactory.getLogger(ImageResizingService.class);
 
-    @Value("${image-resizing-service-url}")
-    private String imageResizingServiceUrl;
-
     private static final int THUMB_SIZE = 256;
     private static final int VISION_SIZE = 800;
     private static Boolean IS_AVAILABLE;
     private static final String STATUS_OK = "STATUS_OK"; // Matches return value of /status in resizing service
 
-    public ImageResizingService() {
+    private final String imageResizingServiceUrl;
+
+    public ImageResizingService(@Value("${image.resizing.service.url}") String imageResizingServiceUrl) {
+        this.imageResizingServiceUrl = imageResizingServiceUrl;
     }
 
     // Get an optimally sized version for the ML Vision API

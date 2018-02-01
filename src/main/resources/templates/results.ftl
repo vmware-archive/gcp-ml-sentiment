@@ -84,55 +84,7 @@
 
 </div>
 </body>
-<#--<script>
-    var maps = (function () {
 
-        var longitude = ${longitude};
-        var latitude = ${latitude};
-
-        var self = this;
-        var map;
-
-        var mapOptions = {
-            placeId: "ChIJ9w1pfYiAhYAR45k8AD-TjhA",
-            center: new google.maps.LatLng(latitude, longitude),
-            mapElementClass: 'labs-map',
-            mapElementId: 'my-google-map',
-            zoom: 16
-        };
-
-        var createMarker = function (place, status) {
-            if (status == google.maps.places.PlacesServiceStatus.OK) {
-                new google.maps.Marker({
-                    map: map,
-                    position: place.geometry.location
-                });
-            }
-        };
-
-        var initialize = function () {
-            map = new google.maps.Map(document.getElementById(mapOptions.mapElementId), {
-                center: mapOptions.center,
-                zoom: mapOptions.zoom,
-                disableDefaultUI: true
-            });
-
-            var request = {
-                placeId: mapOptions.placeId
-            };
-
-            var service = new google.maps.places.PlacesService(map);
-            service.getDetails(request, createMarker);
-        };
-
-        self.initialize = initialize;
-        return self;
-    })();
-
-    google.maps.event.addDomListener(window, 'load', maps.initialize);
-
-
-</script>-->
 <script>
     function initMap() {
         var longitude = ${longitude};
@@ -149,7 +101,7 @@
     }
 </script>
 <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBJY_XInWpyOhNYE3sEIlaqvRhUU0PVYpk&callback=initMap"></script>
+        src="https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="js/materialize.min.js"></script>
 </html>

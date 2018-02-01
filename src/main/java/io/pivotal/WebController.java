@@ -13,6 +13,7 @@ import io.pivotal.service.VisionApiService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StopWatch;
@@ -26,6 +27,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Created by mross on 10/10/16.
@@ -48,17 +53,21 @@ public class WebController {
     @Autowired
     private VisionApiService vps;
 
-    private Map<String, String> imageIdToName;
+    private final String googleMapsApiKey;
 
-    public WebController() {
+    public WebController(@Value("${google.maps.api.key}") String googleMapsApiKey) {
+        this.googleMapsApiKey = googleMapsApiKey;
     }
 
     @RequestMapping("/")
     public String renderIndex(Model model) {
-        imageIdToName = storage.getUploadedImages();
-        Map<String, String> imageUrlToId = imageIdToName.entrySet().stream().collect(
-                Collectors.toMap(s -> storage.getThumbnailUrl(s.getValue()), s -> s.getKey()));
-        model.addAttribute("images", imageUrlToId);
+        Map<String, String> map = storage.getUploadedImages()
+                .entrySet()
+                .parallelStream()
+                .collect(toMap(s -> storage.getThumbnailUrl(s.getValue()), Map.Entry::getKey));
+
+        model.addAttribute("images", map);
+
         return "index";
     }
 
@@ -81,11 +90,11 @@ public class WebController {
 
     @RequestMapping(value = "/result/{imageId}")
     public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
+        Map<String, String> imageIdToName = storage.getUploadedImages();
         String imageName = imageIdToName.get(imageId);
         String publicUrl = storage.getVisionUrl(imageName);
         redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
 
-//        VisionApiService vps = new VisionApiService();
         StopWatch visionApiStopwatch = new StopWatch();
         visionApiStopwatch.start();
 
@@ -189,6 +198,7 @@ public class WebController {
             redirectAttributes.addFlashAttribute("latitude", landmarkResult.getLocations().get(0).getLatLng().getLatitude());
             redirectAttributes.addFlashAttribute("longitude", landmarkResult.getLocations().get(0).getLatLng().getLongitude());
             redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
+            redirectAttributes.addFlashAttribute("googleMapsApiKey", googleMapsApiKey);
 
             StopWatch biqQueryStopwatch = new StopWatch();
             biqQueryStopwatch.start();
