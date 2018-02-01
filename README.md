@@ -1,7 +1,9 @@
 # Demo of Spring Boot App Which Combines Various Google Cloud Platform Services
 
+
 ## Instruction to install
-* Deploy the simple image resizing service
+* Follow its instructions and deploy the image resizing service. This service is available [here](https://github.com/cf-platform-eng/image-resizing-service)
+* Consider scaling it up somewhat
 * Change the `manifest.yml` in this project to reflect the image service url
 ```yaml
     ---
@@ -34,9 +36,3 @@
 ```
     cf start landmark
 ```
-
-## If using the simple image resizing service
-* This service is available [here](https://github.com/cf-platform-eng/image-resizing-service)
-* Follow its instructions and deploy it
-* Consider scaling it up somewhat
-* Edit `./src/main/resources/application.properties` in this project, setting the `image-resizing-service-url` key to the URL of your deployed image resizing service (e.g. `image-resizing-service-url=http://image-resizing-service.apps.yourdomain.com`)
