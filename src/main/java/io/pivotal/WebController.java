@@ -193,7 +193,7 @@ public class WebController {
 
             StopWatch biqQueryStopwatch = new StopWatch();
             biqQueryStopwatch.start();
-            List<TableRow> results = bqs.executeQuery(landmarkName);
+            List<TableRow> results = bqs.executeQuery(landmarkList);
             biqQueryStopwatch.stop();
 
             redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());

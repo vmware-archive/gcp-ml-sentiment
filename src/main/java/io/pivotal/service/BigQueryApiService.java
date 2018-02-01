@@ -5,6 +5,7 @@ import com.google.api.services.bigquery.model.GetQueryResultsResponse;
 import com.google.api.services.bigquery.model.QueryRequest;
 import com.google.api.services.bigquery.model.QueryResponse;
 import com.google.api.services.bigquery.model.TableRow;
+import io.pivotal.domain.LandmarkNameWithScore;
 import io.pivotal.gcp.BiqQueryCredentialManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by mross on 10/7/16.
@@ -58,8 +60,25 @@ public class BigQueryApiService {
         return query;
     }
 
-    public List<TableRow> executeQuery(String landmarkName) {
+    public List<TableRow> executeQuery(List<LandmarkNameWithScore> scoreList) {
+        String landMarkNames = scoreList.stream()
+                .map(LandmarkNameWithScore::getName)
+                .collect(Collectors.joining("|", "(", ")"));
+//        if (scoreList.size() > 1) {
+//            for (LandmarkNameWithScore lws : scoreList) {
+//                if (landMarkNames.length() > 0) {
+//                    landMarkNames += '|'; // Building an OR for the regular expression
+//                }
+//                landMarkNames += lws.getName();
+//            }
+//            landMarkNames = '(' + landMarkNames + ')';
+//        } else {
+//            landMarkNames = scoreList.get(0).getName();
+//        }
+        return executeQuery(landMarkNames);
+    }
 
+    public List<TableRow> executeQuery(String landmarkName) {
         List<TableRow> rows = new ArrayList<TableRow>();
 
         try {
