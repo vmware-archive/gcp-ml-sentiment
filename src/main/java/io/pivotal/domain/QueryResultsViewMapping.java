@@ -16,7 +16,6 @@ public class QueryResultsViewMapping {
     private static final String DEFAULT_VALUE = "(Not available)";
 
     public QueryResultsViewMapping() {
-
         this.bookName = "N/A";
         this.authorName = "N/A";
         this.bookLocation = "N/A";

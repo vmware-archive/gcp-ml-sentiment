@@ -1,15 +1,17 @@
 package io.pivotal;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.api.services.bigquery.model.TableRow;
+import com.google.api.services.vision.v1.model.EntityAnnotation;
+import io.pivotal.domain.LabelResultsViewMapping;
+import io.pivotal.domain.LandmarkNameWithScore;
 import io.pivotal.domain.MultipartFileWrapper;
+import io.pivotal.domain.QueryResultsViewMapping;
+import io.pivotal.service.BigQueryApiService;
 import io.pivotal.service.ImageResizingService;
+import io.pivotal.service.StorageApiService;
+import io.pivotal.service.VisionApiService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -22,15 +24,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.google.api.services.bigquery.model.TableRow;
-import com.google.api.services.vision.v1.model.EntityAnnotation;
+import java.io.IOException;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import io.pivotal.domain.LabelResultsViewMapping;
-import io.pivotal.domain.LandmarkNameWithScore;
-import io.pivotal.domain.QueryResultsViewMapping;
-import io.pivotal.service.BigQueryApiService;
-import io.pivotal.service.StorageApiService;
-import io.pivotal.service.VisionApiService;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * Created by mross on 10/10/16.
@@ -39,26 +39,35 @@ import io.pivotal.service.VisionApiService;
 @Controller
 public class WebController {
 
-    @Value("${gcp-storage-bucket}")
-    private String bucketName;
+    private final static Logger logger = LoggerFactory.getLogger(WebController.class);
 
     @Autowired
     private StorageApiService storage;
 
     @Autowired
+    private BigQueryApiService bqs;
+
+    @Autowired
     private ImageResizingService imageSizer;
 
-    private Map<String, String> imageIdToName;
+    @Autowired
+    private VisionApiService vps;
 
-    public WebController() {
+    private final String googleMapsApiKey;
+
+    public WebController(@Value("${google.maps.api.key}") String googleMapsApiKey) {
+        this.googleMapsApiKey = googleMapsApiKey;
     }
 
     @RequestMapping("/")
     public String renderIndex(Model model) {
-        imageIdToName = storage.getUploadedImages(bucketName);
-        Map<String, String> imageUrlToId = imageIdToName.entrySet().stream().collect(
-                Collectors.toMap(s -> storage.getThumbnailUrl(bucketName, s.getValue()), s -> s.getKey()));
-        model.addAttribute("images", imageUrlToId);
+        Map<String, String> map = storage.getUploadedImages()
+                .entrySet()
+                .parallelStream()
+                .collect(toMap(s -> storage.getThumbnailUrl(s.getValue()), Map.Entry::getKey));
+
+        model.addAttribute("images", map);
+
         return "index";
     }
 
@@ -74,24 +83,22 @@ public class WebController {
 
     @RequestMapping("/delete")
     public String deleteThumbnails(Model model) {
-        System.out.println("Deleting image thumbnails");
-        storage.deleteUploadedImages(bucketName);
+        logger.info("Deleting image thumbnails");
+        storage.deleteUploadedImages();
         return "redirect:/";
     }
 
     @RequestMapping(value = "/result/{imageId}")
     public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
+        Map<String, String> imageIdToName = storage.getUploadedImages();
         String imageName = imageIdToName.get(imageId);
-        //String publicUrl = storage.getPublicUrl(bucketName, imageName);
-        String publicUrl = storage.getVisionUrl(bucketName, imageName);
+        String publicUrl = storage.getVisionUrl(imageName);
         redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
 
-        String gcsUrl = String.format("gs://%s/%s", bucketName, imageName);
-        VisionApiService vps = new VisionApiService();
         StopWatch visionApiStopwatch = new StopWatch();
         visionApiStopwatch.start();
 
-        List<EntityAnnotation> visionApiResults = vps.identifyLandmark(gcsUrl, 10);
+        List<EntityAnnotation> visionApiResults = vps.identifyLandmark(storage.getGSUrl(imageName), 10);
         visionApiStopwatch.stop();
         return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
     }
@@ -110,13 +117,13 @@ public class WebController {
         }
 
         if (imageSizer.isEnabled()) {
-            System.out.println("Image resizer is enabled");
+            logger.info("Image resizer is enabled");
             try {
                 byte[] b = imageSizer.resizeForVisionApi(file.getBytes());
                 fileResized.setBytes(b);
-                System.out.println("File resized successfully");
+                logger.info("File resized successfully");
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e.getMessage(), e);
                 redirectAttributes.addFlashAttribute(
                         "alert", "There was a problem processing your image. Please try again with a different image");
                 return "redirect:/";
@@ -128,28 +135,17 @@ public class WebController {
             return "redirect:/";
         }
 
-        /*
-        if (storage.upload(fileResized, bucketName)) {
-            redirectAttributes.addFlashAttribute("imageUrl",
-                    storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
-        } else {
-            // TODO(dana): Add a better error message
-            redirectAttributes.addFlashAttribute("alert", "File upload failed");
-            return "redirect:/";
-        }
-        */
-
         try {
-            VisionApiService vps = new VisionApiService();
+//            VisionApiService vps = new VisionApiService();
             StopWatch visionApiStopwatch = new StopWatch();
             visionApiStopwatch.start();
 
             List<EntityAnnotation> visionApiResults = vps.identifyLandmark(fileResized.getBytes(), 10);
             visionApiStopwatch.stop();
             if (visionApiResults != null) {
-                if (storage.upload(fileResized, bucketName)) {
+                if (storage.upload(fileResized)) {
                     redirectAttributes.addFlashAttribute("imageUrl",
-                            storage.getPublicUrl(bucketName, fileResized.getOriginalFilename()));
+                            storage.getPublicUrl(fileResized.getOriginalFilename()));
                 } else {
                     // TODO(dana): Add a better error message
                     redirectAttributes.addFlashAttribute("alert", "File upload failed");
@@ -161,7 +157,7 @@ public class WebController {
                         "Your image does not appear to be a landmark.  Please try a different image.");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.error(e.getMessage(), e);
             redirectAttributes.addFlashAttribute("alert",
                     "There was a problem processing your file, please try another image");
         }
@@ -177,7 +173,7 @@ public class WebController {
             redirectAttributes.addFlashAttribute("alert",
                     "Google Vision API was not able to identify your image, please try another");
         } else if (visionApiResults.size() > 0 && visionApiResults.get(0).getLocations() != null) {
-            System.out.println(visionApiResults);
+            logger.info(visionApiResults.toString());
             String landmarkName = "";
             List<LandmarkNameWithScore> landmarkList = new ArrayList<LandmarkNameWithScore>();
             Set<String> landmarkSet = new HashSet<>();
@@ -198,17 +194,15 @@ public class WebController {
             }
             EntityAnnotation landmarkResult = visionApiResults.get(0);
             //String landmarkName = landmarkResult.getDescription();
-            System.out.println("Landmark name: \"" + landmarkName + "\"");
+            logger.info("Landmark name: \"" + landmarkName + "\"");
             redirectAttributes.addFlashAttribute("latitude", landmarkResult.getLocations().get(0).getLatLng().getLatitude());
             redirectAttributes.addFlashAttribute("longitude", landmarkResult.getLocations().get(0).getLatLng().getLongitude());
             redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
-            //redirectAttributes.addFlashAttribute("landmarkScore", VisionApiService.getScoreAsPercent(landmarkResult));
+            redirectAttributes.addFlashAttribute("googleMapsApiKey", googleMapsApiKey);
 
-            //BigQueryApiService bqs = new BigQueryApiService(landmarkName);
-            BigQueryApiService bqs = new BigQueryApiService(landmarkList);
             StopWatch biqQueryStopwatch = new StopWatch();
             biqQueryStopwatch.start();
-            List<TableRow> results = bqs.executeQuery();
+            List<TableRow> results = bqs.executeQuery(landmarkList);
             biqQueryStopwatch.stop();
 
             redirectAttributes.addFlashAttribute("visionApiTiming", visionApiStopwatch.getTotalTimeSeconds());
@@ -219,18 +213,18 @@ public class WebController {
 
             ArrayList<QueryResultsViewMapping> queryResults = null;
             if (results != null) {
-                System.out.println(results.size());
+                logger.info("Resultset size = " + results.size());
                 queryResults = mapResultSetToList(results);
             }
             redirectAttributes.addFlashAttribute("queryResults", queryResults);
             return "redirect:/results";
         } else {
             // Handle the case of multiple possible labels
-            System.out.println("Preparing the labels view ...");
+            logger.info("Preparing the labels view ...");
             ArrayList<LabelResultsViewMapping> labelResults = new ArrayList<LabelResultsViewMapping>();
             for (EntityAnnotation ea : visionApiResults) {
                 LabelResultsViewMapping lab = new LabelResultsViewMapping(ea.getDescription(), ea.getScore());
-                System.out.println(lab);
+                logger.info(lab.getDescription());
                 labelResults.add(lab);
             }
             redirectAttributes.addFlashAttribute("labelResults", labelResults);

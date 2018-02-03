@@ -53,87 +53,55 @@
             Dataset: ${bigQueryDataSet}</code>
     </div>
 
-<div class="section">
-<#if queryResults?has_content>
-    <div class="divider"></div>
-    <table class="bordered highlight" style="display: block; overflow-y: auto; height:450px">
-        <thead>
-        <tr>
-            <th width="40%">Book Title</th>
-            <th width="20%">Author Name</th>
-            <th width="40%">Relevant Tags</th>
-        </tr>
-        </thead>
-        <tbody>
-            <#list queryResults as user>
+    <div class="section">
+    <#if queryResults?has_content>
+        <div class="divider"></div>
+        <table class="bordered highlight" style="display: block; overflow-y: auto; height:450px">
+            <thead>
             <tr>
-                <td width="40%">${user.bookName}</td>
-                <td width="20%">${user.authorName}</td>
-                <td width="40%">${user.bookLocation}</td>
+                <th width="40%">Book Title</th>
+                <th width="20%">Author Name</th>
+                <th width="40%">Relevant Tags</th>
             </tr>
-            </#list>
-        </tbody>
-    </table>
-</div>
-<#else>
-    <h3>Sorry, but no books were found for this landmark.</h3>
-</#if>
-</div>
+            </thead>
+            <tbody>
+                <#list queryResults as user>
+                <tr>
+                    <td width="40%">${user.bookName}</td>
+                    <td width="20%">${user.authorName}</td>
+                    <td width="40%">${user.bookLocation}</td>
+                </tr>
+                </#list>
+            </tbody>
+        </table>
+    </div>
+    <#else>
+        <h3>Sorry, but no books were found for this landmark.</h3>
+    </#if>
+    </div>
 
-<div class="divider"></div>
+    <div class="divider"></div>
 
 </div>
 </body>
+
 <script>
-    var maps = (function () {
-
-        var longitude =  ${longitude}
-        var latitude = ${latitude}
-
-        var self = this;
-        var map;
-
-        var mapOptions = {
-            placeId: "ChIJ9w1pfYiAhYAR45k8AD-TjhA",
-            center: new google.maps.LatLng(latitude, longitude),
-            mapElementClass: 'labs-map',
-            mapElementId: 'my-google-map',
-            zoom: 16
-        };
-
-        var createMarker = function (place, status) {
-            if (status == google.maps.places.PlacesServiceStatus.OK) {
-                new google.maps.Marker({
-                    map: map,
-                    position: place.geometry.location
-                });
-            }
-        };
-
-        var initialize = function () {
-            map = new google.maps.Map(document.getElementById(mapOptions.mapElementId), {
-                center: mapOptions.center,
-                zoom: mapOptions.zoom,
-                disableDefaultUI: true
-            });
-
-            var request = {
-                placeId: mapOptions.placeId
-            };
-
-            var service = new google.maps.places.PlacesService(map);
-            service.getDetails(request, createMarker);
-        };
-
-        self.initialize = initialize;
-        return self;
-    })();
-
-    google.maps.event.addDomListener(window, 'load', maps.initialize);
-
-
+    function initMap() {
+        var longitude = ${longitude};
+        var latitude = ${latitude};
+        var uluru = {lat: latitude, lng: longitude};
+        var map = new google.maps.Map(document.getElementById('my-google-map'), {
+            zoom: 14,
+            center: uluru
+        });
+        var marker = new google.maps.Marker({
+            position: uluru,
+            map: map
+        });
+    }
 </script>
-
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=${googleMapsApiKey}&callback=initMap"></script>
 <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="js/materialize.min.js"></script>
 </html>
