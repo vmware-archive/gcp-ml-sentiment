@@ -7,5 +7,4 @@ public interface CredentialManager<T extends AbstractGoogleClient> {
 
     T getClient();
 
-    String getProjectId();
 }

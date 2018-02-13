@@ -64,7 +64,7 @@ public class StorageApiService {
         listObjects().stream()
                 .map(o -> o.getId().split("/")[1])
                 .forEach(filename -> {
-                    logger.info("Deleting %s from bucket %s\n", filename, bucket);
+                    logger.info(String.format("Deleting %s from bucket %s\n", filename, bucket));
                     try {
                         client.objects().delete(bucket, filename).execute();
                     } catch (IOException e) {

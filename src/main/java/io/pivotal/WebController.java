@@ -26,9 +26,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -106,7 +103,6 @@ public class WebController {
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     public String handleFileUpload(@RequestParam("file") MultipartFile file,
                                    RedirectAttributes redirectAttributes) {
-
         MultipartFileWrapper fileResized = new MultipartFileWrapper(file);
 
         if (!fileResized.mimeTypeSupported()) {
@@ -119,9 +115,8 @@ public class WebController {
         if (imageSizer.isEnabled()) {
             logger.info("Image resizer is enabled");
             try {
-                byte[] b = imageSizer.resizeForVisionApi(file.getBytes());
-                fileResized.setBytes(b);
-                logger.info("File resized successfully");
+                byte[] buffer = imageSizer.resizeForVisionApi(fileResized);
+                fileResized.setBytes(buffer);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
                 redirectAttributes.addFlashAttribute(
@@ -136,7 +131,6 @@ public class WebController {
         }
 
         try {
-//            VisionApiService vps = new VisionApiService();
             StopWatch visionApiStopwatch = new StopWatch();
             visionApiStopwatch.start();
 
@@ -144,8 +138,7 @@ public class WebController {
             visionApiStopwatch.stop();
             if (visionApiResults != null) {
                 if (storage.upload(fileResized)) {
-                    redirectAttributes.addFlashAttribute("imageUrl",
-                            storage.getPublicUrl(fileResized.getOriginalFilename()));
+                    redirectAttributes.addFlashAttribute("imageUrl", storage.getPublicUrl(fileResized.getOriginalFilename()));
                 } else {
                     // TODO(dana): Add a better error message
                     redirectAttributes.addFlashAttribute("alert", "File upload failed");
