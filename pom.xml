@@ -59,24 +59,6 @@
             <version>v1-rev120-1.23.0</version>
 		</dependency>
 
-		<!-- For ImageResizingService -->
-<!--
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.6</version>
-		</dependency>
--->
-
 		<!--Test-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
