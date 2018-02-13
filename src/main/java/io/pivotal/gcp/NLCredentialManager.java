@@ -2,11 +2,15 @@ package io.pivotal.gcp;
 
 import com.google.api.services.language.v1.CloudNaturalLanguage;
 import com.google.api.services.language.v1.CloudNaturalLanguageScopes;
-import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NLCredentialManager extends AbstractCredentialManager<CloudNaturalLanguage> {
+
+    public NLCredentialManager(@Value("${vcap.services.gcp-ml.credentials.PrivateKeyData:}") String privateKeyData) {
+        super(privateKeyData);
+    }
 
     @Override
     public CloudNaturalLanguage getClient() {
@@ -15,12 +19,4 @@ public class NLCredentialManager extends AbstractCredentialManager<CloudNaturalL
                 .setApplicationName(APP_NAME).build();
     }
 
-    @Override
-    protected void extractSpecializedInfos(JSONObject cred) {
-    }
-
-    @Override
-    public String getVCapKey() {
-        return "google-ml-apis";
-    }
 }

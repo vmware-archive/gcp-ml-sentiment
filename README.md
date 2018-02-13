@@ -16,7 +16,7 @@
         IMAGE_RESIZING_SERVICE_URL: http://image-resizing-service.apps.yourdomain.com
         GOOGLE_MAPS_API_KEY: <INSERT YOUR GOOGLE_MAPS_API_KEY>
 ```
-* Create the necessary services
+* Create the necessary services, names are important since we look a service by its name inside our code:
 ```
     cf create-service google-storage standard gcp-storage
     cf create-service google-ml-apis default gcp-ml
