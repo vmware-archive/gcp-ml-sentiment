@@ -1,9 +1,13 @@
 # Demo of Spring Boot App Which Combines Various Google Cloud Platform Services
 
 
-## Instruction to install
+## To install
 * Follow its instructions and deploy the image resizing service. This service is available [here](https://github.com/cf-platform-eng/image-resizing-service)
 * Consider scaling it up somewhat
+* Build this project
+```
+sh mvnw clean package
+```
 * Change the `manifest.yml` in this project to reflect the image service url
 ```yaml
     ---
