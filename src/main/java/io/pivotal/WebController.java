@@ -202,8 +202,8 @@ public class WebController {
             EntityAnnotation landmarkResult = visionApiResults.get(0);
             //String landmarkName = landmarkResult.getDescription();
             logger.info("Landmark name: \"" + landmarkName + "\"");
-            redirectAttributes.addFlashAttribute("latitude", landmarkResult.getLocations().get(0).getLatLng().getLatitude());
-            redirectAttributes.addFlashAttribute("longitude", landmarkResult.getLocations().get(0).getLatLng().getLongitude());
+            redirectAttributes.addFlashAttribute("latitude", String.format(Locale.ROOT, "%.3f", landmarkResult.getLocations().get(0).getLatLng().getLatitude()));
+            redirectAttributes.addFlashAttribute("longitude", String.format(Locale.ROOT, "%.3f", landmarkResult.getLocations().get(0).getLatLng().getLongitude()));
             redirectAttributes.addFlashAttribute("landmarkName", landmarkName);
             redirectAttributes.addFlashAttribute("googleMapsApiKey", googleMapsApiKey);
 
