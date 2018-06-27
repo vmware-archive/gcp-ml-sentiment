@@ -12,8 +12,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 
 /**
  * Created by mgoddard on 10/17/16.
@@ -32,12 +34,31 @@ public class ImageResizingService {
     @Autowired
     private RestTemplate restTemplate;
 
+    public byte[] getThumbnail(String urlBase64) {
+        return getImage(urlBase64, 256);
+    }
+
+    public byte[] getImage(String urlBase64, int size) {
+        URI uri = UriComponentsBuilder.fromHttpUrl(imageResizingServiceUrl)
+                .queryParam("size", size)
+                .queryParam("urlBase64", urlBase64)
+                .build().toUri();
+        System.out.println("Call uri : " + uri.toString());
+        ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);
+        if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
+            logger.info("File resized successfully");
+            return response.getBody();
+        }
+        throw new RuntimeException(String.format("Error while resizing file for a thumbnail. Status code[%s]", response.getStatusCodeValue()));
+    }
+
     // Get an optimally sized version for the ML Vision API
+
     public byte[] resizeForVisionApi(MultipartFile file) throws IOException {
         return resizeImage(file, VISION_SIZE);
     }
-
     // Resize image to specified size, using the service at resizeUrl
+
     private byte[] resizeImage(MultipartFile file, int size) throws IOException {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("file", new NamedResource(file.getBytes(), file.getOriginalFilename()));
@@ -59,5 +80,4 @@ public class ImageResizingService {
             return false;
         }
     }
-
 }

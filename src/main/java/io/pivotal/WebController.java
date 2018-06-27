@@ -14,15 +14,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StopWatch;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.util.*;
@@ -58,10 +58,7 @@ public class WebController {
 
     @RequestMapping("/")
     public String renderIndex(Model model) {
-        Map<String, String> map = storage.getUploadedImages()
-                .entrySet()
-                .parallelStream()
-                .collect(toMap(s -> storage.getThumbnailUrl(s.getValue()), Map.Entry::getKey));
+        Set<String> map = storage.getUploadedImages().keySet();
 
         model.addAttribute("images", map);
 
@@ -89,8 +86,7 @@ public class WebController {
     public String displayResult(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
         Map<String, String> imageIdToName = storage.getUploadedImages();
         String imageName = imageIdToName.get(imageId);
-        String publicUrl = storage.getVisionUrl(imageName);
-        redirectAttributes.addFlashAttribute("imageUrl", publicUrl);
+        redirectAttributes.addFlashAttribute("imageUrl", "/images/" + imageId);
 
         StopWatch visionApiStopwatch = new StopWatch();
         visionApiStopwatch.start();
@@ -98,6 +94,24 @@ public class WebController {
         List<EntityAnnotation> visionApiResults = vps.identifyLandmark(storage.getGSUrl(imageName), 10);
         visionApiStopwatch.stop();
         return displayResult(visionApiResults, visionApiStopwatch, redirectAttributes);
+    }
+
+    @RequestMapping(value = "/thumbnail/{imageId}")
+    public ResponseEntity<byte[]> getThumbnail(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
+        Map<String, String> imageIdToName = storage.getUploadedImages();
+        String imageName = imageIdToName.get(imageId);
+        String thumbnailUrl = storage.getPublicUrlBase64(imageName);
+        byte[] thumbnail = imageSizer.getThumbnail(thumbnailUrl);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).contentLength(thumbnail.length).body(thumbnail);
+    }
+
+    @RequestMapping(value = "/images/{imageId}")
+    public ResponseEntity<byte[]> getImages(@PathVariable String imageId, RedirectAttributes redirectAttributes) {
+        Map<String, String> imageIdToName = storage.getUploadedImages();
+        String imageName = imageIdToName.get(imageId);
+        String thumbnailUrl = storage.getPublicUrlBase64(imageName);
+        byte[] thumbnail = imageSizer.getImage(thumbnailUrl, 800);
+        return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).contentLength(thumbnail.length).body(thumbnail);
     }
 
     @RequestMapping(value = "/upload", method = RequestMethod.POST)

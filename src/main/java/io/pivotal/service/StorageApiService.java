@@ -90,18 +90,13 @@ public class StorageApiService {
     }
 
     public String getResizedImageUrl(String object, int size) {
-        // http://image-resizing-service.apps.pcf-on-gcp.com/?size=1200&urlBase64=aHR0cDovL3N...X0Jlbi5qcGc=
-        String url = getPublicUrl(object);
         if (imageResizingServiceUrl != null && !"NOT_SET".equals(imageResizingServiceUrl)) {
             logger.info("Using image resize service.  URL: " + imageResizingServiceUrl);
-            try {
-                String urlBase64 = new String(Base64.getEncoder().encode(url.getBytes("UTF-8")), "UTF-8");
-                url = String.format("%s/?size=%d&urlBase64=%s", imageResizingServiceUrl, size, urlBase64);
-            } catch (UnsupportedEncodingException e) {
-                logger.warn(e.getMessage(), e);
-            }
+            String urlBase64 = getPublicUrlBase64(object);
+            return String.format("%s/?size=%d&urlBase64=%s", imageResizingServiceUrl, size, urlBase64);
+        } else {
+            return getPublicUrl(object);
         }
-        return url;
     }
 
     public String getThumbnailUrl(String object) {
@@ -120,4 +115,15 @@ public class StorageApiService {
     public String getPublicUrl(String object) {
         return String.format("http://storage.googleapis.com/%s/%s", credentialManager.getBucketName(), object);
     }
+
+    public String getPublicUrlBase64(String object) {
+        try {
+            return new String(Base64.getEncoder().encode(getPublicUrl(object).getBytes("UTF-8")), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+
 }

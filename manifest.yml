@@ -1,9 +1,9 @@
 ---
 applications:
-- name: landmark
-  path: target/gcp-ml-nlp-0.0.1-SNAPSHOT.jar
-  buildpack: java_buildpack_offline
+- name: vanguard
+  path: target/vanguard-0.0.1-SNAPSHOT.jar
+  host: vanguard
   memory: 1G
   env:
-    IMAGE_RESIZING_SERVICE_URL: https://image-resizing-service.apps.pcf-example.xyz
-    GOOGLE_MAPS_API_KEY: <INSERT YOUR GOOGLE_MAPS_API_KEY>
+    IMAGE_RESIZING_SERVICE_URL: http://image-resizer.apps.internal:8080
+    GOOGLE_MAPS_API_KEY: AIzaSyBJY_XInWpyOhNYE3sEIlaqvRhUU0PVYpk
