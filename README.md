@@ -36,6 +36,10 @@ sh mvnw clean package
     cf bind-service vanguard gcp-storage -c '{"role": "storage.admin"}'
     cf bind-service vanguard gcp-ml -c '{"role": "ml.developer"}'
 ```
+* Add network policy to enable traffic toward the image resizer application
+```
+cf add-network-policy vanguard --destination-app image-resizer --protocol tcp --port 8080
+```
 * Start the application
 ```
     cf start vanguard
