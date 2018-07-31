@@ -6,4 +6,4 @@ applications:
   memory: 1G
   env:
     IMAGE_RESIZING_SERVICE_URL: http://image-resizer.apps.internal:8080
-    GOOGLE_MAPS_API_KEY: AIzaSyBJY_XInWpyOhNYE3sEIlaqvRhUU0PVYpk
+    GOOGLE_MAPS_API_KEY: <YOUR MAPS API KEY HERE>
