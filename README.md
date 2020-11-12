@@ -1,3 +1,5 @@
+# gcp-ml-sentiment is no longer actively maintained by VMware.
+
 # Demo of Spring Boot App Which Combines Various Google Cloud Platform Services
 
 
