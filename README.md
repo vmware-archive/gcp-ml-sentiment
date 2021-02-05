@@ -35,7 +35,7 @@ sh mvnw clean package
 * Bind the services with right roles
 ```
     cf bind-service landmark gcp-bigquery -c '{"role": "bigquery.user"}'
-    cf bind-service landmark gcp-storage -c '{"role": "storage.admin"}'
+    cf bind-service landmark gcp-storage -c '{"role": "storage.objectAdmin"}'
     cf bind-service landmark gcp-ml -c '{"role": "ml.developer"}'
 ```
 * Start the application
