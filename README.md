@@ -34,11 +34,15 @@ sh mvnw clean package
 ```
 * Bind the services with right roles
 ```
-    cf bind-service landmark gcp-bigquery -c '{"role": "bigquery.user"}'
-    cf bind-service landmark gcp-storage -c '{"role": "storage.admin"}'
-    cf bind-service landmark gcp-ml -c '{"role": "ml.developer"}'
+    cf bind-service vanguard gcp-bigquery -c '{"role": "bigquery.user"}'
+    cf bind-service vanguard gcp-storage -c '{"role": "storage.admin"}'
+    cf bind-service vanguard gcp-ml -c '{"role": "ml.developer"}'
+```
+* Add network policy to enable traffic toward the image resizer application
+```
+cf add-network-policy vanguard --destination-app image-resizer --protocol tcp --port 8080
 ```
 * Start the application
 ```
-    cf start landmark
+    cf start vanguard
 ```

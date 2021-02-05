@@ -2,9 +2,12 @@
 <head>
     <title>Landmark Finder 3000</title>
     <!--Import Google Icon Font-->
-    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!--Import materialize.css-->
-    <link type="text/css" rel="stylesheet" href="css/materialize.min.css" media="screen,projection"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
 
     <!--Let browser know website is optimized for mobile-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -75,8 +78,13 @@
                 <form method="GET" action="/delete">
                     <input class="btn" type="submit" value="Delete Images" id="deleteButton">
                 </form>
+<#--
             <#list images?keys as url>
                 <a href="/result/${images[url]}"><img src="${url}" class="thumbnail"></a>
+            </#list>
+-->
+            <#list images as image>
+                <a href="/result/${image}"><img src="/thumbnail/${image}" class="thumbnail"></a>
             </#list>
             </div>
         </div>
